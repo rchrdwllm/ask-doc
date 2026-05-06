@@ -17,6 +17,7 @@
   },
   "dependencies": {
     "@base-ui/react": "^1.4.1",
+    "@elysia/eden": "^1.4.10",
     "@hookform/resolvers": "^5.2.2",
     "@neondatabase/serverless": "^1.1.0",
     "better-auth": "^1.6.9",
