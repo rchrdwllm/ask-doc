@@ -2,6 +2,9 @@ import { setupServer } from "msw/node";
 import { http, HttpResponse } from "msw";
 
 export const handlers = [
+  http.get("/api", async () => {
+    return HttpResponse.json({ ok: true }, { status: 200 });
+  }),
   http.post("/api/auth/signin/email", async () => {
     return HttpResponse.json({ ok: true }, { status: 200 });
   }),
