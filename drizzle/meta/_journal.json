@@ -8,6 +8,13 @@
       "when": 1778055325437,
       "tag": "0000_perfect_richard_fisk",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1778312044245,
+      "tag": "0001_sticky_professor_monster",
+      "breakpoints": true
     }
   ]
 }
