@@ -9,7 +9,7 @@ AskDoc is an AI-powered document Q&A application that lets users upload PDF docu
 - Framework: Next.js 16.2.4 (App Router)
 - UI: Tailwind CSS v4 + shadcn/ui
 - Auth: Better Auth 1.6.9 (Google OAuth + credentials)
-- Database: Neon (PostgreSQL) via @neondatabase/serverless
+- Database: Supabase (PostgreSQL)
 - ORM: Drizzle ORM 0.45.2
 - AI: Google Gemini 2.5 Flash - planned
 - PDF Processing: pdfjs-dist - planned
@@ -99,7 +99,7 @@ Always use `bun` for package management and scripts.
 - Session table for active sessions
 - Account table for OAuth + password accounts
 - Verification table for email verification
-- All tables use Neon (PostgreSQL) database
+- All tables use Supabase (PostgreSQL) database
 
 ### Pages
 
@@ -138,7 +138,7 @@ The following features are defined in the PRD but not yet built:
 ### Required Environment Variables
 
 ```
-DATABASE_URL=<neon-connection-string>
+DATABASE_URL=<supabase-connection-string>
 GOOGLE_CLIENT_ID=<google-oauth-client-id>
 GOOGLE_CLIENT_SECRET=<google-oauth-client-secret>
 BETTER_AUTH_SECRET=<auth-secret>
