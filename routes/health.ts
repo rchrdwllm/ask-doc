@@ -3,14 +3,22 @@ import * as z from "zod";
 
 export const healthRouter = new Elysia({ prefix: "/health" }).get(
   "/",
-  () => {
-    return {
-      status: "ok",
-    };
+  ({ status }) => {
+    return status(200, {
+      status: "OK",
+    });
   },
   {
-    response: z.object({
-      status: z.string(),
-    }),
+    response: {
+      200: z.object({
+        status: z.string(),
+      }),
+      500: z.object({
+        error: z.object({
+          code: z.string(),
+          message: z.string(),
+        }),
+      }),
+    },
   },
 );
