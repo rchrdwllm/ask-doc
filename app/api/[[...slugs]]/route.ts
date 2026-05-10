@@ -1,11 +1,14 @@
-import { Elysia } from "elysia";
-import { auth } from "@/lib/auth";
+import { handler } from "../../../lib/elysia";
 
-const app = new Elysia({ prefix: "/api" })
-  .mount(auth.handler)
-  .get("/", () => ({ ok: true, testIfMeron: "askdjhfjsd" }));
-
-export const GET = app.fetch;
-export const POST = app.fetch;
-
-export type App = typeof app;
+export async function GET(request: Request) {
+  return handler(request);
+}
+export async function POST(request: Request) {
+  return handler(request);
+}
+export async function PUT(request: Request) {
+  return handler(request);
+}
+export async function DELETE(request: Request) {
+  return handler(request);
+}

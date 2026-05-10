@@ -9,6 +9,7 @@ import {
   pgEnum,
   integer,
 } from "drizzle-orm/pg-core";
+import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 
 // Enums
 export const messageRoleEnum = pgEnum("message_role", [
@@ -236,3 +237,7 @@ export const messageRelations = relations(message, ({ many, one }) => ({
     references: [conversation.id],
   }),
 }));
+
+// Zod Schemas
+export const documentInsertSchema = createInsertSchema(document);
+export const documentSelectSchema = createSelectSchema(document);

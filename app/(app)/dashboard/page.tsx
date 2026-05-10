@@ -6,7 +6,7 @@ import { useEffect } from "react";
 export default function DashboardPage() {
   useEffect(() => {
     const fetch = async () => {
-      const res = await client.get();
+      const res = await client.health.get();
 
       console.log({ res })
     };
