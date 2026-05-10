@@ -4,12 +4,12 @@ export default async function HealthPage() {
   const res = await client.health.get();
 
   if (res.error) {
-    const { code, message } = res.error.value as any;
+    const { message } = res.error.value;
 
     return (
       <div>
         <p>
-          Health check failed: {message} (code: {code})
+          Health check failed: {message}
         </p>
       </div>
     );
