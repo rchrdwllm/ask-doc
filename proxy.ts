@@ -13,7 +13,7 @@ export async function proxy(request: NextRequest) {
   }
 
   // Allow unauthenticated access to authentication routes
-  if (pathname.startsWith("/api/auth")) {
+  if (pathname.startsWith("/api/auth") || pathname.startsWith("/api/health")) {
     return NextResponse.next();
   }
 
@@ -30,5 +30,7 @@ export async function proxy(request: NextRequest) {
 
 export const config = {
   // Exclude authentication routes, Next.js internals, and static assets from the proxy
-  matcher: ["/((?!api/auth|login|register|_next|static|favicon.ico).*)"],
+  matcher: [
+    "/((?!api/auth|api/health|login|register|_next|static|favicon.ico).*)",
+  ],
 };
