@@ -7,19 +7,20 @@ import { headers } from "next/headers";
 import * as z from "zod";
 import { createSupabaseClient } from "@/lib/supabase";
 import { randomUUID } from "crypto";
-
-const MAX_FILE_SIZE = 20 * 1024 * 1024; // 20MB
+import { MAX_FILE_SIZE } from "@/constants";
 
 export const documentsRouter = new Elysia({ prefix: "/documents" })
   .get(
     "/",
-    async () => {
+    async ({ status }) => {
       const session = await auth.api.getSession({
         headers: await headers(),
       });
 
       if (!session) {
-        throw Error("No user session found");
+        return status(401, {
+          message: "Unauthorized",
+        });
       }
 
       const result = await db
@@ -27,37 +28,42 @@ export const documentsRouter = new Elysia({ prefix: "/documents" })
         .from(document)
         .where(eq(document.userId, session.user.id));
 
-      return {
-        success: true,
-        data: result,
-      };
+      return status(200, result);
     },
     {
-      response: z.object({
-        success: z.boolean(),
-        data: z.array(documentSelectSchema),
-      }),
+      response: {
+        200: z.array(documentSelectSchema),
+        401: z.object({
+          message: z.string(),
+        }),
+      },
     },
   )
   .post(
     "/",
-    async ({ body }) => {
+    async ({ body, status }) => {
       const session = await auth.api.getSession({
         headers: await headers(),
       });
 
       if (!session) {
-        throw Error("No user session found");
+        return status(401, {
+          message: "Unauthorized",
+        });
       }
 
       const { file } = body;
 
       if (!file) {
-        throw new Error("No file provided");
+        return status(400, {
+          message: "No file provided",
+        });
       }
 
       if (file.size > MAX_FILE_SIZE) {
-        throw new Error("File size exceeds 20MB limit");
+        return status(400, {
+          message: "File size exceeds 20MB limit",
+        });
       }
 
       const docId = randomUUID();
@@ -78,7 +84,10 @@ export const documentsRouter = new Elysia({ prefix: "/documents" })
 
       if (error) {
         console.error("Supabase upload error:", error);
-        throw new Error("Failed to upload file");
+
+        return status(500, {
+          message: "Failed to upload file",
+        });
       }
 
       const { data: urlData } = supabase.storage
@@ -97,24 +106,29 @@ export const documentsRouter = new Elysia({ prefix: "/documents" })
         })
         .returning();
 
-      return {
-        success: true,
-        data: result[0],
-      };
+      return status(200, result[0]);
     },
     {
       body: z.object({
         file: z.custom<File>(),
       }),
-      response: z.object({
-        success: z.boolean(),
-        data: documentSelectSchema,
-      }),
+      response: {
+        200: documentSelectSchema,
+        400: z.object({
+          message: z.string(),
+        }),
+        401: z.object({
+          message: z.string(),
+        }),
+        500: z.object({
+          message: z.string(),
+        }),
+      },
     },
   )
   .get(
     "/:id",
-    async ({ params }: { params: { id: string } }) => {
+    async ({ params, status }) => {
       const { id } = params;
 
       const result = await db
@@ -122,21 +136,23 @@ export const documentsRouter = new Elysia({ prefix: "/documents" })
         .from(document)
         .where(eq(document.id, id));
 
-      return {
-        success: true,
-        data: result[0],
-      };
+      return status(200, result[0]);
     },
     {
-      response: z.object({
-        success: z.boolean(),
-        data: documentSelectSchema.nullable(),
-      }),
+      response: {
+        200: documentSelectSchema,
+        400: z.object({
+          message: z.string(),
+        }),
+        401: z.object({
+          message: z.string(),
+        }),
+      },
     },
   )
   .delete(
     "/:id",
-    async ({ params }: { params: { id: string } }) => {
+    async ({ params, status }) => {
       const { id } = params;
 
       const result = await db
@@ -144,15 +160,11 @@ export const documentsRouter = new Elysia({ prefix: "/documents" })
         .where(eq(document.id, id))
         .returning();
 
-      return {
-        success: true,
-        data: result[0],
-      };
+      return status(200, result[0]);
     },
     {
-      response: z.object({
-        success: z.boolean(),
-        data: documentSelectSchema.nullable(),
-      }),
+      response: {
+        200: documentSelectSchema,
+      },
     },
   );

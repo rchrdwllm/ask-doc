@@ -14,10 +14,7 @@ export const healthRouter = new Elysia({ prefix: "/health" }).get(
         status: z.string(),
       }),
       500: z.object({
-        error: z.object({
-          code: z.string(),
-          message: z.string(),
-        }),
+        message: z.string(),
       }),
     },
   },
