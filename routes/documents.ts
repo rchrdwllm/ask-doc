@@ -131,12 +131,34 @@ export const documentsRouter = new Elysia({ prefix: "/documents" })
     async ({ params, status }) => {
       const { id } = params;
 
-      const result = await db
+      const session = await auth.api.getSession({
+        headers: await headers(),
+      });
+
+      if (!session) {
+        return status(401, {
+          message: "Unauthorized",
+        });
+      }
+
+      const [result] = await db
         .select()
         .from(document)
         .where(eq(document.id, id));
 
-      return status(200, result[0]);
+      if (!result) {
+        return status(404, {
+          message: "Document not found",
+        });
+      }
+
+      if (result.userId !== session.user.id) {
+        return status(401, {
+          message: "Unauthorized",
+        });
+      }
+
+      return status(200, result);
     },
     {
       response: {
@@ -147,6 +169,9 @@ export const documentsRouter = new Elysia({ prefix: "/documents" })
         401: z.object({
           message: z.string(),
         }),
+        404: z.object({
+          message: z.string(),
+        }),
       },
     },
   )
@@ -155,16 +180,52 @@ export const documentsRouter = new Elysia({ prefix: "/documents" })
     async ({ params, status }) => {
       const { id } = params;
 
-      const result = await db
+      const session = await auth.api.getSession({
+        headers: await headers(),
+      });
+
+      if (!session) {
+        return status(401, {
+          message: "Unauthorized",
+        });
+      }
+
+      const [result] = await db
+        .select()
+        .from(document)
+        .where(eq(document.id, id));
+
+      if (!result) {
+        return status(404, {
+          message: "Document not found",
+        });
+      }
+
+      if (result.userId !== session.user.id) {
+        return status(401, {
+          message: "Unauthorized",
+        });
+      }
+
+      const [deletedResult] = await db
         .delete(document)
         .where(eq(document.id, id))
         .returning();
 
-      return status(200, result[0]);
+      return status(200, deletedResult);
     },
     {
       response: {
         200: documentSelectSchema,
+        400: z.object({
+          message: z.string(),
+        }),
+        401: z.object({
+          message: z.string(),
+        }),
+        404: z.object({
+          message: z.string(),
+        }),
       },
     },
   );
