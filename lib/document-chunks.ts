@@ -21,9 +21,5 @@ export const chunkDocument = async (file: File) => {
 
   const chunks = await splitter.splitDocuments(docs);
 
-  chunks.forEach((chunk, index) => {
-    console.log(`Chunk ${index + 1}:`, chunk);
-  });
-
   return chunks;
 };
