@@ -49,26 +49,26 @@ export function AppSidebar() {
 						<NavGroup key={`sidebar-group-${index}`} {...group} />
 					))}
 				</SidebarContent>
-			<SidebarFooter>
-				<SidebarMenu className="mt-2">
-					{footerNavLinks.map((item) => (
-						<SidebarMenuItem key={item.title}>
-							<SidebarMenuButton
-								asChild
-								className="text-muted-foreground"
-								isActive={item.isActive}
-								size="sm"
-							>
-								<Link href={item.path || "#"}>
-									{item.icon}
-									<span>{item.title}</span>
-								</Link>
-							</SidebarMenuButton>
-						</SidebarMenuItem>
-					))}
-				</SidebarMenu>
-			</SidebarFooter>
-		</Sidebar>
+				<SidebarFooter>
+					<SidebarMenu className="mt-2">
+						{footerNavLinks.map((item) => (
+							<SidebarMenuItem key={item.title}>
+								<SidebarMenuButton
+									asChild
+									className="text-muted-foreground"
+									isActive={item.isActive}
+									size="sm"
+								>
+									<Link href={item.path || "#"}>
+										{item.icon}
+										<span>{item.title}</span>
+									</Link>
+								</SidebarMenuButton>
+							</SidebarMenuItem>
+						))}
+					</SidebarMenu>
+				</SidebarFooter>
+			</Sidebar>
 			<UploadDialog open={isOpen} onOpenChange={setIsOpen} />
 		</>
 	);

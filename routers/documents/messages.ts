@@ -1,14 +1,11 @@
 import { Elysia } from "elysia";
-import { db } from "@/db";
 import { auth } from "@/lib/auth";
-import { and, eq } from "drizzle-orm";
 import { headers } from "next/headers";
+import { messageInsertSchema } from "@/db/schema";
 import {
-  conversation,
-  document,
-  message,
-  messageInsertSchema,
-} from "@/db/schema";
+  createMessage,
+  getConversationIdByDocumentId,
+} from "@/functions/messages";
 import * as z from "zod";
 
 export const messagesRouter = new Elysia({
@@ -28,23 +25,15 @@ export const messagesRouter = new Elysia({
       });
     }
 
-    const [documentResult] = await db
-      .select({ id: document.id, conversationId: conversation.id })
-      .from(document)
-      .innerJoin(conversation, eq(document.id, conversation.documentId))
-      .where(and(eq(document.id, id)));
+    const conversationId = await getConversationIdByDocumentId(id);
 
-    if (!documentResult) {
+    if (!conversationId) {
       return status(404, {
         error: "Document not found",
       });
     }
 
-    const [messageResult] = await db.insert(message).values({
-      ...body,
-      conversationId: documentResult.conversationId,
-      role: "user",
-    });
+    const messageResult = await createMessage(conversationId, body);
 
     if (!messageResult) {
       return status(500, {

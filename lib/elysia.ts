@@ -1,7 +1,7 @@
 import { Elysia } from "elysia";
 import { auth } from "@/lib/auth";
-import { healthRouter } from "@/routes/health";
-import { documentsRouter } from "@/routes/documents";
+import { healthRouter } from "@/routers/health";
+import { documentsRouter } from "@/routers/documents";
 
 const app = new Elysia({ prefix: "/api" })
   .onError(({ code, error, set }) => {

@@ -1,7 +1,5 @@
-import { db } from "@/db";
-import { document, documentSelectSchema } from "@/db/schema";
+import { documentSelectSchema } from "@/db/schema";
 import { auth } from "@/lib/auth";
-import { eq } from "drizzle-orm";
 import { Elysia } from "elysia";
 import { headers } from "next/headers";
 import * as z from "zod";
@@ -10,6 +8,12 @@ import { randomUUID } from "crypto";
 import { MAX_FILE_SIZE } from "@/constants";
 import { conversationsRouter } from "./conversations";
 import { messagesRouter } from "./messages";
+import {
+  createDocument,
+  deleteDocument,
+  getAllUserDocuments,
+  getDocumentById,
+} from "@/functions/documents";
 
 export const documentsRouter = new Elysia({ prefix: "/documents" })
   .get(
@@ -25,17 +29,23 @@ export const documentsRouter = new Elysia({ prefix: "/documents" })
         });
       }
 
-      const result = await db
-        .select()
-        .from(document)
-        .where(eq(document.userId, session.user.id));
+      const result = await getAllUserDocuments(session.user.id);
 
-      return status(200, result);
+      if (!result) {
+        return status(404, {
+          message: "No documents found",
+        });
+      }
+
+      return result;
     },
     {
       response: {
         200: z.array(documentSelectSchema),
         401: z.object({
+          message: z.string(),
+        }),
+        404: z.object({
           message: z.string(),
         }),
       },
@@ -96,19 +106,20 @@ export const documentsRouter = new Elysia({ prefix: "/documents" })
         .from("documents")
         .getPublicUrl(data.path);
 
-      const result = await db
-        .insert(document)
-        .values({
-          id: docId,
-          title: fileName.replace(/\.pdf$/i, ""),
-          url: urlData.publicUrl,
-          storage_path: data.path,
-          status: "processing",
-          userId: session.user.id,
-        })
-        .returning();
+      const result = await createDocument(
+        session.user.id,
+        fileName.replace(/\.pdf$/i, ""),
+        urlData.publicUrl,
+        data.path,
+      );
 
-      return status(200, result[0]);
+      if (!result) {
+        return status(500, {
+          message: "Failed to create document record",
+        });
+      }
+
+      return status(200, result);
     },
     {
       body: z.object({
@@ -143,10 +154,7 @@ export const documentsRouter = new Elysia({ prefix: "/documents" })
         });
       }
 
-      const [result] = await db
-        .select()
-        .from(document)
-        .where(eq(document.id, id));
+      const result = await getDocumentById(id);
 
       if (!result) {
         return status(404, {
@@ -192,10 +200,7 @@ export const documentsRouter = new Elysia({ prefix: "/documents" })
         });
       }
 
-      const [result] = await db
-        .select()
-        .from(document)
-        .where(eq(document.id, id));
+      const result = await getDocumentById(id);
 
       if (!result) {
         return status(404, {
@@ -223,10 +228,7 @@ export const documentsRouter = new Elysia({ prefix: "/documents" })
         });
       }
 
-      const [deletedResult] = await db
-        .delete(document)
-        .where(eq(document.id, id))
-        .returning();
+      const deletedResult = await deleteDocument(id);
 
       return status(200, deletedResult);
     },

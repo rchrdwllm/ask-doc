@@ -1,7 +1,6 @@
-import { db } from "@/db";
-import { conversation, conversationSelectSchema } from "@/db/schema";
+import { conversationSelectSchema } from "@/db/schema";
 import { auth } from "@/lib/auth";
-import { and, eq } from "drizzle-orm";
+import { getConversationByDocumentId } from "@/functions/conversations";
 import { Elysia } from "elysia";
 import { headers } from "next/headers";
 import * as z from "zod";
@@ -23,15 +22,7 @@ export const conversationsRouter = new Elysia({
       });
     }
 
-    const [result] = await db
-      .select()
-      .from(conversation)
-      .where(
-        and(
-          eq(conversation.userId, session.user.id),
-          eq(conversation.documentId, id),
-        ),
-      );
+    const result = await getConversationByDocumentId(id, session.user.id);
 
     if (!result)
       return status(404, {
