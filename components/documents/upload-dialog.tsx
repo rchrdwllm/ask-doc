@@ -63,19 +63,27 @@ export function UploadDialog({ open, onOpenChange }: UploadDialogProps) {
         return;
       }
 
+      onOpenChange(false);
+
       const chunks = await chunkDocument(file);
+      const { data: chunksWithEmbeddings, error: embeddingsError } = await client.embeddings.post({ chunks });
 
-      // Embeddings will be generated in a separate step, so we can set them to null for now
+      if (embeddingsError) {
+        setError(embeddingsError.value.message || "Failed to generate embeddings");
+        setIsUploading(false);
 
-      const chunksInsertMap: z.infer<typeof documentChunkInsertSchema>[] = chunks.map((chunk, idx) => ({
+        return;
+      }
+
+      const chunksInsertMap: z.infer<typeof documentChunkInsertSchema>[] = chunksWithEmbeddings.map((chunk, idx) => ({
         id: crypto.randomUUID(),
         chunkIndex: idx,
         content: chunk.pageContent,
-        pageNumbers: Array.isArray(chunk.metadata.loc.page) ? chunk.metadata.loc.pageNumber : [chunk.metadata.loc.pageNumber],
+        pageNumbers: Array.isArray(chunk.metadata.loc.pageNumber) ? chunk.metadata.loc.pageNumber.map(Number) : [Number(chunk.metadata.loc.pageNumber)],
         lineFrom: chunk.metadata.loc.lines.from,
         lineTo: chunk.metadata.loc.lines.to,
         documentId: data.id,
-        embedding: null, // Will be generated later
+        embedding: chunk.embedding,
       }));
 
       const { error: chunksError } = await client.documents({ id: data.id }).chunks.post(chunksInsertMap);
