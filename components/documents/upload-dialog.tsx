@@ -13,6 +13,9 @@ import {
 import { Button } from "@/components/ui/button";
 import { FileIcon, UploadCloud, XIcon, Loader2Icon } from "lucide-react";
 import { client } from "@/lib/api";
+import { chunkDocument } from "@/lib/document-chunks";
+import { documentChunkInsertSchema } from "@/db/schema";
+import * as z from 'zod';
 
 interface UploadDialogProps {
   open: boolean;
@@ -52,10 +55,33 @@ export function UploadDialog({ open, onOpenChange }: UploadDialogProps) {
     setError(null);
 
     try {
-      const { error } = await client.documents.post({ file });
+      const { data, error: documentError } = await client.documents.post({ file });
 
-      if (error) {
-        setError(error.value.message || "Upload failed");
+      if (documentError) {
+        setError(documentError.value.message || "Upload failed");
+
+        return;
+      }
+
+      const chunks = await chunkDocument(file);
+
+      // Embeddings will be generated in a separate step, so we can set them to null for now
+
+      const chunksInsertMap: z.infer<typeof documentChunkInsertSchema>[] = chunks.map((chunk, idx) => ({
+        id: crypto.randomUUID(),
+        chunkIndex: idx,
+        content: chunk.pageContent,
+        pageNumbers: Array.isArray(chunk.metadata.loc.page) ? chunk.metadata.loc.pageNumber : [chunk.metadata.loc.pageNumber],
+        lineFrom: chunk.metadata.loc.lines.from,
+        lineTo: chunk.metadata.loc.lines.to,
+        documentId: data.id,
+        embedding: null, // Will be generated later
+      }));
+
+      const { error: chunksError } = await client.documents({ id: data.id }).chunks.post(chunksInsertMap);
+
+      if (chunksError) {
+        setError(chunksError.value.message || "Failed to create document chunks");
 
         return;
       }
