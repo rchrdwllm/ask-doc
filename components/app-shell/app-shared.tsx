@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { LayoutDashboardIcon, FileTextIcon, HelpCircleIcon, SettingsIcon } from "lucide-react";
+import { FileTextIcon, HelpCircleIcon, SettingsIcon } from "lucide-react";
 
 export type SidebarNavItem = {
 	title: string;
@@ -19,7 +19,7 @@ export const navGroups: SidebarNavGroup[] = [
 		items: [
 			{
 				title: "Documents",
-				path: "/dashboard/documents",
+				path: "/documents",
 				icon: <FileTextIcon />,
 			},
 		],
