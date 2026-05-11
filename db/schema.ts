@@ -128,15 +128,19 @@ export const documentChunk = pgTable(
     content: text("content").notNull(),
     pageNumbers: integer("page_numbers").array(),
     chunkIndex: integer("chunk_index").notNull(),
+    lineFrom: integer("line_from"),
+    lineTo: integer("line_to"),
     embedding: vector("embedding", { dimensions: 768 }),
     createdAt: timestamp("created_at").notNull().defaultNow(),
     updatedAt: timestamp("updated_at")
       .defaultNow()
       .$onUpdate(() => new Date())
       .notNull(),
-    documentId: text("document_id").references(() => document.id, {
-      onDelete: "cascade",
-    }),
+    documentId: text("document_id")
+      .references(() => document.id, {
+        onDelete: "cascade",
+      })
+      .notNull(),
   },
   (table) => [
     index("document_chunk_embedding_idx").using(
@@ -157,9 +161,11 @@ export const conversation = pgTable(
       .$onUpdate(() => new Date())
       .notNull(),
     userId: text("user_id").references(() => user.id, { onDelete: "cascade" }),
-    documentId: text("document_id").references(() => document.id, {
-      onDelete: "cascade",
-    }),
+    documentId: text("document_id")
+      .references(() => document.id, {
+        onDelete: "cascade",
+      })
+      .notNull(),
   },
   (table) => [
     index("conversation_title_idx").on(table.title),
@@ -179,9 +185,11 @@ export const message = pgTable(
       .defaultNow()
       .$onUpdate(() => new Date())
       .notNull(),
-    conversationId: text("conversation_id").references(() => conversation.id, {
-      onDelete: "cascade",
-    }),
+    conversationId: text("conversation_id")
+      .references(() => conversation.id, {
+        onDelete: "cascade",
+      })
+      .notNull(),
   },
   (table) => [index("message_conversation_id").on(table.conversationId)],
 );
@@ -245,3 +253,5 @@ export const conversationInsertSchema = createInsertSchema(conversation);
 export const conversationSelectSchema = createSelectSchema(conversation);
 export const messageInsertSchema = createInsertSchema(message);
 export const messageSelectSchema = createSelectSchema(message);
+export const documentChunkInsertSchema = createInsertSchema(documentChunk);
+export const documentChunkSelectSchema = createSelectSchema(documentChunk);
