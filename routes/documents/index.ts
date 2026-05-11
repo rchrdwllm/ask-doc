@@ -8,6 +8,8 @@ import * as z from "zod";
 import { createSupabaseClient } from "@/lib/supabase";
 import { randomUUID } from "crypto";
 import { MAX_FILE_SIZE } from "@/constants";
+import { conversationsRouter } from "./conversations";
+import { messagesRouter } from "./messages";
 
 export const documentsRouter = new Elysia({ prefix: "/documents" })
   .get(
@@ -207,6 +209,20 @@ export const documentsRouter = new Elysia({ prefix: "/documents" })
         });
       }
 
+      const supabase = createSupabaseClient();
+
+      const { error } = await supabase.storage
+        .from("documents")
+        .remove([result.storage_path]);
+
+      if (error) {
+        console.error("Supabase delete error:", error);
+
+        return status(500, {
+          message: "Failed to delete file",
+        });
+      }
+
       const [deletedResult] = await db
         .delete(document)
         .where(eq(document.id, id))
@@ -226,6 +242,11 @@ export const documentsRouter = new Elysia({ prefix: "/documents" })
         404: z.object({
           message: z.string(),
         }),
+        500: z.object({
+          message: z.string(),
+        }),
       },
     },
-  );
+  )
+  .use(conversationsRouter)
+  .use(messagesRouter);
