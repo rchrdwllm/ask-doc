@@ -15,6 +15,34 @@
       "when": 1778312044245,
       "tag": "0001_sticky_professor_monster",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1778501375137,
+      "tag": "0002_sad_luckman",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1778502896623,
+      "tag": "0003_damp_warpath",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1778506479498,
+      "tag": "0004_mushy_drax",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1778506791446,
+      "tag": "0005_yellow_namor",
+      "breakpoints": true
     }
   ]
 }

@@ -16,6 +16,7 @@
     "test:e2e:ui": "playwright test --ui"
   },
   "dependencies": {
+    "@ai-sdk/google": "^3.0.71",
     "@base-ui/react": "^1.4.1",
     "@elysia/eden": "^1.4.10",
     "@hookform/resolvers": "^5.2.2",
@@ -23,6 +24,7 @@
     "@langchain/textsplitters": "^1.0.1",
     "@neondatabase/serverless": "^1.1.0",
     "@supabase/supabase-js": "^2.105.4",
+    "ai": "^6.0.177",
     "better-auth": "^1.6.9",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
@@ -67,6 +69,7 @@
     "drizzle-kit": "^0.31.10",
     "jsdom": "^29.1.1",
     "msw": "^2.14.3",
+    "pdfjs-dist": "^5.7.284",
     "tailwindcss": "^4",
     "tsx": "^4.21.0",
     "typescript": "^5",

@@ -14,6 +14,7 @@ import {
   getAllUserDocuments,
   getDocumentById,
 } from "@/functions/documents";
+import { documentChunksRouter } from "./document-chunks";
 
 export const documentsRouter = new Elysia({ prefix: "/documents" })
   .get(
@@ -251,4 +252,5 @@ export const documentsRouter = new Elysia({ prefix: "/documents" })
     },
   )
   .use(conversationsRouter)
-  .use(messagesRouter);
+  .use(messagesRouter)
+  .use(documentChunksRouter);
