@@ -9,7 +9,12 @@ import {
   pgEnum,
   integer,
 } from "drizzle-orm/pg-core";
-import { createInsertSchema, createSelectSchema } from "drizzle-zod";
+import {
+  createInsertSchema,
+  createSelectSchema,
+  createUpdateSchema,
+} from "drizzle-zod";
+import { InferSelectModel, InferInsertModel } from "drizzle-orm";
 
 // Enums
 export const messageRoleEnum = pgEnum("message_role", [
@@ -249,9 +254,19 @@ export const messageRelations = relations(message, ({ many, one }) => ({
 // Zod Schemas
 export const documentInsertSchema = createInsertSchema(document);
 export const documentSelectSchema = createSelectSchema(document);
+export const documentUpdateSchema = createUpdateSchema(document);
 export const conversationInsertSchema = createInsertSchema(conversation);
 export const conversationSelectSchema = createSelectSchema(conversation);
 export const messageInsertSchema = createInsertSchema(message);
 export const messageSelectSchema = createSelectSchema(message);
 export const documentChunkInsertSchema = createInsertSchema(documentChunk);
 export const documentChunkSelectSchema = createSelectSchema(documentChunk);
+
+// Type exports
+export type DocumentRow = InferSelectModel<typeof document>;
+export type DocumentInsert = InferInsertModel<typeof document>;
+export type DocumentChunkRow = InferSelectModel<typeof documentChunk>;
+export type ConversationRow = InferSelectModel<typeof conversation>;
+export type MessageRow = InferSelectModel<typeof message>;
+export type MessageInsert = InferInsertModel<typeof message>;
+export type DocumentStatus = (typeof documentStatusEnum.enumValues)[number];

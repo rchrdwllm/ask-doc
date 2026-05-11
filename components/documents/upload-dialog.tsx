@@ -63,6 +63,8 @@ export function UploadDialog({ open, onOpenChange }: UploadDialogProps) {
         return;
       }
 
+      router.refresh();
+
       onOpenChange(false);
 
       const chunks = await chunkDocument(file);
@@ -91,6 +93,13 @@ export function UploadDialog({ open, onOpenChange }: UploadDialogProps) {
       if (chunksError) {
         setError(chunksError.value.message || "Failed to create document chunks");
 
+        return;
+      }
+
+      const { error: updateError } = await client.documents({ id: data.id }).patch({ status: "ready" });
+
+      if (updateError) {
+        setError(updateError.value.message || "Failed to update document status");
         return;
       }
 

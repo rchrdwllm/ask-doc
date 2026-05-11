@@ -1,6 +1,7 @@
-import { document } from "@/db/schema";
+import { document, documentUpdateSchema } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import { db } from "@/db";
+import * as z from "zod";
 
 export const getAllUserDocuments = async (userId: string) => {
   const result = await db
@@ -34,10 +35,7 @@ export const createDocument = async (
 };
 
 export const getDocumentById = async (id: string) => {
-  const [result] = await db
-    .select()
-    .from(document)
-    .where(eq(document.id, id));
+  const [result] = await db.select().from(document).where(eq(document.id, id));
 
   return result || null;
 };
@@ -45,6 +43,19 @@ export const getDocumentById = async (id: string) => {
 export const deleteDocument = async (id: string) => {
   const [result] = await db
     .delete(document)
+    .where(eq(document.id, id))
+    .returning();
+
+  return result;
+};
+
+export const updateDocument = async (
+  id: string,
+  updates: z.infer<typeof documentUpdateSchema>,
+) => {
+  const [result] = await db
+    .update(document)
+    .set(updates)
     .where(eq(document.id, id))
     .returning();
 

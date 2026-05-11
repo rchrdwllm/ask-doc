@@ -12,3 +12,6 @@ export async function PUT(request: Request) {
 export async function DELETE(request: Request) {
   return handler(request);
 }
+export async function PATCH(request: Request) {
+  return handler(request);
+}

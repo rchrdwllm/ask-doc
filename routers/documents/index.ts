@@ -1,4 +1,4 @@
-import { documentSelectSchema } from "@/db/schema";
+import { documentSelectSchema, documentUpdateSchema } from "@/db/schema";
 import { auth } from "@/lib/auth";
 import { Elysia } from "elysia";
 import { headers } from "next/headers";
@@ -13,6 +13,7 @@ import {
   deleteDocument,
   getAllUserDocuments,
   getDocumentById,
+  updateDocument,
 } from "@/functions/documents";
 import { documentChunksRouter } from "./document-chunks";
 
@@ -246,6 +247,47 @@ export const documentsRouter = new Elysia({ prefix: "/documents" })
           message: z.string(),
         }),
         500: z.object({
+          message: z.string(),
+        }),
+      },
+    },
+  )
+  .patch(
+    "/:id",
+    async ({ params, body, status }) => {
+      const { id } = params;
+
+      const session = await auth.api.getSession({
+        headers: await headers(),
+      });
+
+      if (!session) {
+        return status(401, {
+          message: "Unauthorized",
+        });
+      }
+
+      const result = await updateDocument(id, body);
+
+      if (!result) {
+        return status(404, {
+          message: "Document not found",
+        });
+      }
+
+      return status(200, result);
+    },
+    {
+      body: documentUpdateSchema,
+      response: {
+        200: documentSelectSchema,
+        400: z.object({
+          message: z.string(),
+        }),
+        401: z.object({
+          message: z.string(),
+        }),
+        404: z.object({
           message: z.string(),
         }),
       },
