@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { FileIcon, UploadCloud, XIcon, Loader2Icon } from "lucide-react";
+import { client } from "@/lib/api";
 
 interface UploadDialogProps {
   open: boolean;
@@ -27,15 +28,18 @@ export function UploadDialog({ open, onOpenChange }: UploadDialogProps) {
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = e.target.files?.[0];
+
     if (selectedFile) {
       if (selectedFile.type !== "application/pdf") {
         setError("Please select a PDF file");
         return;
       }
+
       if (selectedFile.size > 20 * 1024 * 1024) {
         setError("File size exceeds 20MB limit");
         return;
       }
+
       setFile(selectedFile);
       setError(null);
     }
@@ -48,21 +52,17 @@ export function UploadDialog({ open, onOpenChange }: UploadDialogProps) {
     setError(null);
 
     try {
-      const formData = new FormData();
-      formData.append("file", file);
+      const { error } = await client.documents.post({ file });
 
-      const response = await fetch("/api/documents", {
-        method: "POST",
-        body: formData,
-      });
+      if (error) {
+        setError(error.value.message || "Upload failed");
 
-      if (!response.ok) {
-        const data = await response.json();
-        throw new Error(data.message || "Failed to upload document");
+        return;
       }
 
       setFile(null);
       onOpenChange(false);
+
       router.refresh();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Upload failed");
