@@ -241,3 +241,7 @@ export const messageRelations = relations(message, ({ many, one }) => ({
 // Zod Schemas
 export const documentInsertSchema = createInsertSchema(document);
 export const documentSelectSchema = createSelectSchema(document);
+export const conversationInsertSchema = createInsertSchema(conversation);
+export const conversationSelectSchema = createSelectSchema(conversation);
+export const messageInsertSchema = createInsertSchema(message);
+export const messageSelectSchema = createSelectSchema(message);
