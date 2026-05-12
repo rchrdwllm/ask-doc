@@ -74,6 +74,8 @@ export function UploadDialog({ open, onOpenChange }: UploadDialogProps) {
         setError(embeddingsError.value.message || "Failed to generate embeddings");
         setIsUploading(false);
 
+        await client.documents({ id: data.id }).patch({ status: "error" })
+
         return;
       }
 
