@@ -173,7 +173,7 @@ export function AppSidebar() {
 												tooltip={doc.title}
 												onClick={() => updateRecentAccess(doc)}
 											>
-												<Link href={`/documents#document-${doc.id}`}>
+												<Link href={`/documents/${doc.id}`}>
 													<FileTextIcon />
 													<span>{doc.title}</span>
 												</Link>
