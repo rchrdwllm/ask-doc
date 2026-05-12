@@ -34,7 +34,7 @@ export const footerNavLinks: SidebarNavItem[] = [
 	},
 	{
 		title: "Settings",
-		path: "/dashboard/settings",
+		path: "/documents/settings",
 		icon: <SettingsIcon />,
 	},
 ];

@@ -91,7 +91,7 @@ Always use `bun` for package management and scripts.
 - Server-side auth in `lib/auth.ts` using `better-auth`
 - Client-side auth client in `lib/auth-client.ts` using `better-auth/react`
 - Auth validation schemas in `lib/schemas/auth.ts`
-- Protected dashboard route at `/dashboard`
+- Protected dashboard route at `/documents`
 
 ### Database Schema (Drizzle ORM)
 
@@ -106,7 +106,7 @@ Always use `bun` for package management and scripts.
 - Landing page at `/` (public)
 - Login page at `/login`
 - Register page at `/register`
-- Dashboard at `/dashboard` (protected)
+- Dashboard at `/documents` (protected)
 
 ## Planned Architecture
 

@@ -164,7 +164,7 @@ describe("auth client", () => {
     const result = await authClient.signIn.email({
       email: "test@example.com",
       password: "password123",
-      callbackURL: "/dashboard",
+      callbackURL: "/documents",
     });
 
     expect(result.error).toBeNull();
@@ -249,9 +249,7 @@ export default defineConfig({
     baseURL: "http://localhost:3000",
     trace: "on-first-retry",
   },
-  projects: [
-    { name: "chromium", use: { ...devices["Desktop Chrome"] } },
-  ],
+  projects: [{ name: "chromium", use: { ...devices["Desktop Chrome"] } }],
   webServer: {
     command: "bun run dev",
     port: 3000,
@@ -287,7 +285,7 @@ test("user can sign up with email", async ({ page }) => {
   await page.getByLabel("Confirm Password").fill("password123");
   await page.getByRole("button", { name: /create account/i }).click();
 
-  await expect(page).toHaveURL(/dashboard/);
+  await expect(page).toHaveURL(/documents/);
 });
 ```
 
@@ -303,7 +301,7 @@ test("user can sign in with email", async ({ page }) => {
   await page.getByLabel("Password").fill("password123");
   await page.getByRole("button", { name: /sign in/i }).click();
 
-  await expect(page).toHaveURL(/dashboard/);
+  await expect(page).toHaveURL(/documents/);
 });
 ```
 
@@ -313,7 +311,7 @@ test("user can sign in with email", async ({ page }) => {
 import { test, expect } from "@playwright/test";
 
 test("user can sign out", async ({ page }) => {
-  await page.goto("/dashboard");
+  await page.goto("/documents");
   await page.getByRole("button", { name: /sign out/i }).click();
 
   await expect(page).toHaveURL(/login/);
@@ -326,7 +324,7 @@ test("user can sign out", async ({ page }) => {
 import { test, expect } from "@playwright/test";
 
 test("unauthenticated users are redirected", async ({ page }) => {
-  await page.goto("/dashboard");
+  await page.goto("/documents");
   await expect(page).toHaveURL(/login/);
 });
 ```

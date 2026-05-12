@@ -48,15 +48,15 @@ export const user = pgTable("user", {
 });
 ```
 
-| Field | Type | Constraints | Description |
-|-------|------|-------------|-------------|
-| `id` | text | primaryKey | Unique user identifier |
-| `name` | text | notNull | User's display name |
-| `email` | text | notNull, unique | User's email address |
-| `emailVerified` | boolean | default(false) | Whether email is verified |
-| `image` | text | nullable | URL to user's avatar |
-| `createdAt` | timestamp | notNull, defaultNow | Creation timestamp |
-| `updatedAt` | timestamp | notNull, autoUpdate | Last update timestamp |
+| Field           | Type      | Constraints         | Description               |
+| --------------- | --------- | ------------------- | ------------------------- |
+| `id`            | text      | primaryKey          | Unique user identifier    |
+| `name`          | text      | notNull             | User's display name       |
+| `email`         | text      | notNull, unique     | User's email address      |
+| `emailVerified` | boolean   | default(false)      | Whether email is verified |
+| `image`         | text      | nullable            | URL to user's avatar      |
+| `createdAt`     | timestamp | notNull, defaultNow | Creation timestamp        |
+| `updatedAt`     | timestamp | notNull, autoUpdate | Last update timestamp     |
 
 ### Session Table
 
@@ -83,18 +83,19 @@ export const session = pgTable(
 );
 ```
 
-| Field | Type | Constraints | Description |
-|-------|------|-------------|-------------|
-| `id` | text | primaryKey | Unique session identifier |
-| `expiresAt` | timestamp | notNull | Session expiration time |
-| `token` | text | notNull, unique | Session token for authentication |
-| `createdAt` | timestamp | notNull, defaultNow | Creation timestamp |
-| `updatedAt` | timestamp | notNull, autoUpdate | Last update timestamp |
-| `ipAddress` | text | nullable | Client IP address |
-| `userAgent` | text | nullable | Client user agent |
-| `userId` | text | notNull, foreignKey | Reference to user |
+| Field       | Type      | Constraints         | Description                      |
+| ----------- | --------- | ------------------- | -------------------------------- |
+| `id`        | text      | primaryKey          | Unique session identifier        |
+| `expiresAt` | timestamp | notNull             | Session expiration time          |
+| `token`     | text      | notNull, unique     | Session token for authentication |
+| `createdAt` | timestamp | notNull, defaultNow | Creation timestamp               |
+| `updatedAt` | timestamp | notNull, autoUpdate | Last update timestamp            |
+| `ipAddress` | text      | nullable            | Client IP address                |
+| `userAgent` | text      | nullable            | Client user agent                |
+| `userId`    | text      | notNull, foreignKey | Reference to user                |
 
 **Indexes:**
+
 - `session_userId_idx` on `userId` - For session lookups by user
 
 ### Account Table
@@ -127,23 +128,24 @@ export const account = pgTable(
 );
 ```
 
-| Field | Type | Constraints | Description |
-|-------|------|-------------|-------------|
-| `id` | text | primaryKey | Unique account identifier |
-| `accountId` | text | notNull | Provider-specific account ID |
-| `providerId` | text | notNull | OAuth provider identifier |
-| `userId` | text | notNull, foreignKey | Reference to user |
-| `accessToken` | text | nullable | OAuth access token |
-| `refreshToken` | text | nullable | OAuth refresh token |
-| `idToken` | text | nullable | OAuth ID token |
-| `accessTokenExpiresAt` | timestamp | nullable | Access token expiration |
-| `refreshTokenExpiresAt` | timestamp | nullable | Refresh token expiration |
-| `scope` | text | nullable | OAuth scope |
-| `password` | text | nullable | Hashed password (for credentials) |
-| `createdAt` | timestamp | notNull, defaultNow | Creation timestamp |
-| `updatedAt` | timestamp | notNull, autoUpdate | Last update timestamp |
+| Field                   | Type      | Constraints         | Description                       |
+| ----------------------- | --------- | ------------------- | --------------------------------- |
+| `id`                    | text      | primaryKey          | Unique account identifier         |
+| `accountId`             | text      | notNull             | Provider-specific account ID      |
+| `providerId`            | text      | notNull             | OAuth provider identifier         |
+| `userId`                | text      | notNull, foreignKey | Reference to user                 |
+| `accessToken`           | text      | nullable            | OAuth access token                |
+| `refreshToken`          | text      | nullable            | OAuth refresh token               |
+| `idToken`               | text      | nullable            | OAuth ID token                    |
+| `accessTokenExpiresAt`  | timestamp | nullable            | Access token expiration           |
+| `refreshTokenExpiresAt` | timestamp | nullable            | Refresh token expiration          |
+| `scope`                 | text      | nullable            | OAuth scope                       |
+| `password`              | text      | nullable            | Hashed password (for credentials) |
+| `createdAt`             | timestamp | notNull, defaultNow | Creation timestamp                |
+| `updatedAt`             | timestamp | notNull, autoUpdate | Last update timestamp             |
 
 **Indexes:**
+
 - `account_userId_idx` on `userId` - For account lookups by user
 
 ### Verification Table
@@ -168,16 +170,17 @@ export const verification = pgTable(
 );
 ```
 
-| Field | Type | Constraints | Description |
-|-------|------|-------------|-------------|
-| `id` | text | primaryKey | Unique verification identifier |
-| `identifier` | text | notNull | What is being verified (e.g., email) |
-| `value` | text | notNull | Verification token value |
-| `expiresAt` | timestamp | notNull | Token expiration time |
-| `createdAt` | timestamp | notNull, defaultNow | Creation timestamp |
-| `updatedAt` | timestamp | notNull, autoUpdate | Last update timestamp |
+| Field        | Type      | Constraints         | Description                          |
+| ------------ | --------- | ------------------- | ------------------------------------ |
+| `id`         | text      | primaryKey          | Unique verification identifier       |
+| `identifier` | text      | notNull             | What is being verified (e.g., email) |
+| `value`      | text      | notNull             | Verification token value             |
+| `expiresAt`  | timestamp | notNull             | Token expiration time                |
+| `createdAt`  | timestamp | notNull, defaultNow | Creation timestamp                   |
+| `updatedAt`  | timestamp | notNull, autoUpdate | Last update timestamp                |
 
 **Indexes:**
+
 - `verification_identifier_idx` on `identifier` - For verification lookups
 
 ### Table Relationships
@@ -246,14 +249,14 @@ export const auth = betterAuth({
 
 ### Configuration Options
 
-| Option | Type | Description |
-|--------|------|-------------|
-| `database` | drizzleAdapter | Drizzle ORM adapter for PostgreSQL |
-| `emailAndPassword.enabled` | boolean | Enable email/password authentication |
-| `socialProviders.google` | object | Google OAuth configuration |
-| `account.accountLinking.enabled` | boolean | Allow linking multiple accounts to one user |
-| `account.accountLinking.updateUserInfoOnLink` | boolean | Update user info when linking accounts |
-| `plugins` | array | Additional plugins (nextCookies) |
+| Option                                        | Type           | Description                                 |
+| --------------------------------------------- | -------------- | ------------------------------------------- |
+| `database`                                    | drizzleAdapter | Drizzle ORM adapter for PostgreSQL          |
+| `emailAndPassword.enabled`                    | boolean        | Enable email/password authentication        |
+| `socialProviders.google`                      | object         | Google OAuth configuration                  |
+| `account.accountLinking.enabled`              | boolean        | Allow linking multiple accounts to one user |
+| `account.accountLinking.updateUserInfoOnLink` | boolean        | Update user info when linking accounts      |
+| `plugins`                                     | array          | Additional plugins (nextCookies)            |
 
 ### Email and Password
 
@@ -292,14 +295,14 @@ export const { GET, POST } = toNextJsHandler(auth);
 
 All auth endpoints are handled by Better Auth at `/api/auth`:
 
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| POST | `/api/auth/signup/email` | Register with email/password |
-| POST | `/api/auth/signin/email` | Sign in with email/password |
-| GET/POST | `/api/auth/signin/google` | OAuth Google sign-in |
-| GET/POST | `/api/auth/signout` | Sign out |
-| GET | `/api/auth/session` | Get current session |
-| POST | `/api/auth/verify` | Verify email |
+| Method   | Endpoint                  | Description                  |
+| -------- | ------------------------- | ---------------------------- |
+| POST     | `/api/auth/signup/email`  | Register with email/password |
+| POST     | `/api/auth/signin/email`  | Sign in with email/password  |
+| GET/POST | `/api/auth/signin/google` | OAuth Google sign-in         |
+| GET/POST | `/api/auth/signout`       | Sign out                     |
+| GET      | `/api/auth/session`       | Get current session          |
+| POST     | `/api/auth/verify`        | Verify email                 |
 
 ## Client-Side Usage
 
@@ -321,7 +324,7 @@ export const authClient = createAuthClient({
 const { error } = await authClient.signIn.email({
   email,
   password,
-  callbackURL: "/dashboard",
+  callbackURL: "/documents",
 });
 ```
 
@@ -336,16 +339,19 @@ const { error } = await authClient.signIn.social({
 #### Sign Up with Email/Password
 
 ```typescript
-const { error } = await authClient.signUp.email({
-  email,
-  password,
-  name,
-  image, // optional
-}, {
-  onSuccess: () => {
-    router.push("/dashboard");
+const { error } = await authClient.signUp.email(
+  {
+    email,
+    password,
+    name,
+    image, // optional
   },
-});
+  {
+    onSuccess: () => {
+      router.push("/documents");
+    },
+  },
+);
 ```
 
 #### Sign Out
@@ -391,32 +397,34 @@ export const loginSchema = z.object({
 });
 ```
 
-| Field | Validation | Error Message |
-|-------|------------|---------------|
-| `email` | valid email | "Invalid email address" |
-| `password` | min 1 character | "Password is required" |
+| Field      | Validation      | Error Message           |
+| ---------- | --------------- | ----------------------- |
+| `email`    | valid email     | "Invalid email address" |
+| `password` | min 1 character | "Password is required"  |
 
 ### Register Schema
 
 ```typescript
-export const registerSchema = z.object({
-  name: z.string().min(1, "Name is required"),
-  email: z.string().email("Invalid email address"),
-  password: z.string().min(8, "Password must be at least 8 characters"),
-  confirmPassword: z.string().min(1, "Please confirm your password"),
-}).refine((data) => data.password === data.confirmPassword, {
-  message: "Passwords don't match",
-  path: ["confirmPassword"],
-});
+export const registerSchema = z
+  .object({
+    name: z.string().min(1, "Name is required"),
+    email: z.string().email("Invalid email address"),
+    password: z.string().min(8, "Password must be at least 8 characters"),
+    confirmPassword: z.string().min(1, "Please confirm your password"),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: "Passwords don't match",
+    path: ["confirmPassword"],
+  });
 ```
 
-| Field | Validation | Error Message |
-|-------|------------|---------------|
-| `name` | min 1 character | "Name is required" |
-| `email` | valid email | "Invalid email address" |
-| `password` | min 8 characters | "Password must be at least 8 characters" |
-| `confirmPassword` | min 1 character | "Please confirm your password" |
-| cross-field | password === confirmPassword | "Passwords don't match" |
+| Field             | Validation                   | Error Message                            |
+| ----------------- | ---------------------------- | ---------------------------------------- |
+| `name`            | min 1 character              | "Name is required"                       |
+| `email`           | valid email                  | "Invalid email address"                  |
+| `password`        | min 8 characters             | "Password must be at least 8 characters" |
+| `confirmPassword` | min 1 character              | "Please confirm your password"           |
+| cross-field       | password === confirmPassword | "Passwords don't match"                  |
 
 ### Type Exports
 
@@ -429,13 +437,13 @@ export type RegisterInput = z.infer<typeof registerSchema>;
 
 Required environment variables for authentication:
 
-| Variable | Required | Description |
-|----------|----------|-------------|
-| `GOOGLE_CLIENT_ID` | Yes* | Google OAuth client ID |
-| `GOOGLE_CLIENT_SECRET` | Yes* | Google OAuth client secret |
-| `BETTER_AUTH_URL` | Yes | Base URL for Better Auth (e.g., http://localhost:3000) |
+| Variable               | Required | Description                                            |
+| ---------------------- | -------- | ------------------------------------------------------ |
+| `GOOGLE_CLIENT_ID`     | Yes\*    | Google OAuth client ID                                 |
+| `GOOGLE_CLIENT_SECRET` | Yes\*    | Google OAuth client secret                             |
+| `BETTER_AUTH_URL`      | Yes      | Base URL for Better Auth (e.g., http://localhost:3000) |
 
-*Required if Google OAuth is enabled
+\*Required if Google OAuth is enabled
 
 Add these to your `.env.local` file:
 
@@ -496,6 +504,7 @@ db/
 Located at `app/(auth)/login/page.tsx`.
 
 Features:
+
 - Email/password sign-in form with validation
 - Google OAuth sign-in button
 - Error handling with AlertDialog
@@ -507,6 +516,7 @@ Features:
 Located at `app/(auth)/register/page.tsx`.
 
 Features:
+
 - Name, email, password, confirm password fields
 - Client-side validation with Zod schemas
 - Email/password registration
@@ -515,9 +525,9 @@ Features:
 - Loading states during submission
 - Link to login page
 
-### Dashboard Page (`/dashboard`)
+### Dashboard Page (`/documents`)
 
-Located at `app/(app)/dashboard/page.tsx`.
+Located at `app/(app)/documents/page.tsx`.
 
 Protected route accessible only to authenticated users.
 
@@ -574,9 +584,6 @@ import { twoFactor } from "better-auth/plugins/2fa";
 
 export const auth = betterAuth({
   // ...other config
-  plugins: [
-    nextCookies(),
-    twoFactor(),
-  ],
+  plugins: [nextCookies(), twoFactor()],
 });
 ```

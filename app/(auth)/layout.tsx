@@ -8,7 +8,7 @@ export default async function Layout({ children }: { children: React.ReactNode }
   });
 
   if (session) {
-    return redirect('/dashboard')
+    return redirect('/documents')
   }
 
   return <>{children}</>;

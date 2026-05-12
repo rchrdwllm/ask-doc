@@ -279,10 +279,10 @@ export default function RegisterPage() {
       email,
       password,
       name,
-      callbackURL: "/dashboard"
+      callbackURL: "/documents"
     }, {
       onSuccess: () => {
-        router.push("/dashboard");
+        router.push("/documents");
       }
     })
 

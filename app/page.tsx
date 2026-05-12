@@ -8,7 +8,7 @@ export default async function Home() {
   });
 
   if (session) {
-    return redirect("/dashboard");
+    return redirect("/documents");
   }
 
   return redirect("/login");
