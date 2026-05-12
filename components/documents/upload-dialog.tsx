@@ -16,6 +16,7 @@ import { client } from "@/lib/api";
 import { chunkDocument } from "@/lib/document-chunks";
 import { documentChunkInsertSchema } from "@/db/schema";
 import * as z from 'zod';
+import { MAX_FILE_SIZE } from "@/constants";
 
 interface UploadDialogProps {
   open: boolean;
@@ -41,7 +42,7 @@ export function UploadDialog({ open, onOpenChange }: UploadDialogProps) {
         return;
       }
 
-      if (selectedFile.size > 20 * 1024 * 1024) {
+      if (selectedFile.size > MAX_FILE_SIZE) {
         setError("File size exceeds 20MB limit");
         return;
       }
