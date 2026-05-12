@@ -46,7 +46,7 @@ export function DocumentsList({ documents, onDelete }: DocumentsListProps) {
       </TableHeader>
       <TableBody>
         {documents.map((doc) => (
-          <TableRow key={doc.id}>
+          <TableRow key={doc.id} id={`document-${doc.id}`}>
             <TableCell>
               <div className="flex items-center gap-3">
                 <div className="flex size-9 items-center justify-center rounded-lg bg-muted">

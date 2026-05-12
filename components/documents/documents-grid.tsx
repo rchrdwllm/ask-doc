@@ -36,7 +36,7 @@ export function DocumentsGrid({ documents, onDelete }: DocumentsGridProps) {
   return (
     <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
       {documents.map((doc) => (
-        <Card key={doc.id} className="group cursor-pointer transition-shadow hover:shadow-md">
+        <Card key={doc.id} id={`document-${doc.id}`} className="group cursor-pointer transition-shadow hover:shadow-md">
           <CardHeader>
             <div className="flex items-start justify-between">
               <div className="flex size-10 items-center justify-center rounded-lg bg-muted">

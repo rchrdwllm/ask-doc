@@ -69,6 +69,9 @@ export default function DocumentsClient({ documents }: DocumentsClientProps) {
       setDocumentItems((items) => items.filter((doc) => doc.id !== deleteTarget.id))
       setIsDeleteOpen(false)
       toast.success("Document deleted", { id: toastId })
+      if (typeof window !== "undefined") {
+        window.dispatchEvent(new Event("askdoc:documents-updated"))
+      }
     } catch (error) {
       console.error(error)
       toast.error("Failed to delete document", { id: toastId })

@@ -68,6 +68,9 @@ export function UploadDialog({ open, onOpenChange }: UploadDialogProps) {
         return;
       }
 
+      if (typeof window !== "undefined") {
+        window.dispatchEvent(new Event("askdoc:documents-updated"));
+      }
       router.refresh();
 
       onOpenChange(false);
