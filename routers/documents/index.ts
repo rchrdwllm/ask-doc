@@ -16,6 +16,7 @@ import {
   updateDocument,
 } from "@/functions/documents";
 import { documentChunksRouter } from "./document-chunks";
+import { retrievalRouter } from "./retrieval";
 
 export const documentsRouter = new Elysia({ prefix: "/documents" })
   .get(
@@ -295,4 +296,5 @@ export const documentsRouter = new Elysia({ prefix: "/documents" })
   )
   .use(conversationsRouter)
   .use(messagesRouter)
-  .use(documentChunksRouter);
+  .use(documentChunksRouter)
+  .use(retrievalRouter);
