@@ -33,7 +33,10 @@ export function UploadDialog({ open, onOpenChange }: UploadDialogProps) {
     const selectedFile = e.target.files?.[0];
 
     if (selectedFile) {
-      if (selectedFile.type !== "application/pdf") {
+      const isPdfType = selectedFile.type === "application/pdf";
+      const isPdfExtension = selectedFile.name.toLowerCase().endsWith(".pdf");
+
+      if (!isPdfType && !isPdfExtension) {
         setError("Please select a PDF file");
         return;
       }
@@ -126,7 +129,7 @@ export function UploadDialog({ open, onOpenChange }: UploadDialogProps) {
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-md md:max-w-lg">
         <DialogHeader>
           <DialogTitle>Upload Document</DialogTitle>
           <DialogDescription>
