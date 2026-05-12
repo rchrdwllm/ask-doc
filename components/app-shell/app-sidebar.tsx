@@ -97,10 +97,13 @@ export function AppSidebar() {
 
 	useEffect(() => {
 		if (typeof window === "undefined") return;
+
 		const handleDocumentsUpdated = () => {
 			loadRecentDocuments();
 		};
+
 		window.addEventListener("askdoc:documents-updated", handleDocumentsUpdated);
+
 		return () => {
 			window.removeEventListener(
 				"askdoc:documents-updated",
@@ -158,25 +161,25 @@ export function AppSidebar() {
 						<SidebarMenu className="mt-1">
 							{isLoadingRecents
 								? Array.from({ length: 3 }).map((_, index) => (
-										<SidebarMenuItem key={`recent-loading-${index}`}>
-											<div className="h-8 animate-pulse rounded-md bg-sidebar-accent/40" />
-										</SidebarMenuItem>
-									))
+									<SidebarMenuItem key={`recent-loading-${index}`}>
+										<div className="h-8 animate-pulse rounded-md bg-sidebar-accent/40" />
+									</SidebarMenuItem>
+								))
 								: recentItems.length > 0
 									? recentItems.map(({ doc }) => (
-											<SidebarMenuItem key={doc.id}>
-												<SidebarMenuButton
-													asChild
-													tooltip={doc.title}
-													onClick={() => updateRecentAccess(doc)}
-												>
-													<Link href={`/documents#document-${doc.id}`}>
-														<FileTextIcon />
-														<span>{doc.title}</span>
-													</Link>
-												</SidebarMenuButton>
-											</SidebarMenuItem>
-										))
+										<SidebarMenuItem key={doc.id}>
+											<SidebarMenuButton
+												asChild
+												tooltip={doc.title}
+												onClick={() => updateRecentAccess(doc)}
+											>
+												<Link href={`/documents#document-${doc.id}`}>
+													<FileTextIcon />
+													<span>{doc.title}</span>
+												</Link>
+											</SidebarMenuButton>
+										</SidebarMenuItem>
+									))
 									: (
 										<SidebarMenuItem>
 											<SidebarMenuButton disabled>
