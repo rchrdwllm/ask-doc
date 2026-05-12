@@ -3,6 +3,15 @@ import { and, eq } from "drizzle-orm";
 import { db } from "@/db";
 import * as z from "zod";
 
+export const getConversationById = async (id: string, userId: string) => {
+  const result = await db
+    .select()
+    .from(conversation)
+    .where(and(eq(conversation.id, id), eq(conversation.userId, userId)));
+
+  return result;
+};
+
 export const getConversationsByDocumentId = async (
   documentId: string,
   userId: string,

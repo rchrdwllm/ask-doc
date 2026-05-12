@@ -1,4 +1,5 @@
 import { messageInsertSchema, messageSelectSchema } from "@/db/schema";
+import { getConversationById } from "@/functions/conversations";
 import {
   createMessage,
   getMessagesByConversationId,
@@ -26,7 +27,21 @@ export const messagesRouter = new Elysia({
         });
       }
 
+      const conversation = await getConversationById(id, session.user.id);
+
+      if (!conversation) {
+        return status(404, {
+          message: "Conversation not found",
+        });
+      }
+
       const result = await getMessagesByConversationId(id);
+
+      if (!result) {
+        return status(500, {
+          message: "Failed to retrieve messages for conversation",
+        });
+      }
 
       return status(200, result);
     },
@@ -37,6 +52,12 @@ export const messagesRouter = new Elysia({
       response: {
         200: messageSelectSchema.array(),
         401: z.object({
+          message: z.string(),
+        }),
+        404: z.object({
+          message: z.string(),
+        }),
+        500: z.object({
           message: z.string(),
         }),
       },
@@ -54,6 +75,14 @@ export const messagesRouter = new Elysia({
       if (!session) {
         return status(401, {
           message: "Unauthorized",
+        });
+      }
+
+      const conversation = await getConversationById(id, session.user.id);
+
+      if (!conversation) {
+        return status(404, {
+          message: "Conversation not found",
         });
       }
 
