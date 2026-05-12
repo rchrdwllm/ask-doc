@@ -20,10 +20,10 @@ import { useRouter } from "next/navigation";
 import { Skeleton } from "../ui/skeleton";
 
 export function NavUser() {
-	const { data, isPending, isRefetching } = authClient.useSession();
+	const { data, isPending } = authClient.useSession();
 	const router = useRouter();
 
-	if (isPending || isRefetching) {
+	if (isPending) {
 		return <Skeleton className="size-8 rounded-full" />
 	}
 
