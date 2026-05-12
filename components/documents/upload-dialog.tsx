@@ -17,6 +17,7 @@ import { chunkDocument } from "@/lib/document-chunks";
 import { documentChunkInsertSchema } from "@/db/schema";
 import * as z from 'zod';
 import { MAX_FILE_SIZE } from "@/constants";
+import { toast } from "sonner";
 
 interface UploadDialogProps {
   open: boolean;
@@ -71,7 +72,30 @@ export function UploadDialog({ open, onOpenChange }: UploadDialogProps) {
 
       onOpenChange(false);
 
-      const chunks = await chunkDocument(file);
+      const { data: chunks, error: chunkError } = await chunkDocument(file);
+
+      if (chunkError) {
+        setError(chunkError);
+        setFile(null)
+
+        await client.documents({ id: data.id }).patch({ status: "error" });
+
+        toast.error(chunkError);
+        router.refresh();
+
+        return;
+      } else if (!chunks || chunks.length === 0) {
+        setError("Failed to chunk document. Please make sure the file has valid text content.");
+        setFile(null)
+
+        await client.documents({ id: data.id }).patch({ status: "error" });
+
+        toast.error("Failed to chunk document. Please make sure the file has valid text content.");
+        router.refresh()
+
+        return;
+      }
+
       const { data: chunksWithEmbeddings, error: embeddingsError } = await client.embeddings.post({ chunks });
 
       if (embeddingsError) {
