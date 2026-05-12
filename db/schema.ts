@@ -226,7 +226,7 @@ export const documentRelations = relations(document, ({ many, one }) => ({
     fields: [document.userId],
     references: [user.id],
   }),
-  conversation: one(conversation),
+  conversation: many(conversation),
 }));
 
 export const conversationRelations = relations(

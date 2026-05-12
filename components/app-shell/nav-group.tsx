@@ -50,7 +50,7 @@ export function NavGroup({ label, items }: SidebarNavGroup) {
 														asChild
 														isActive={subItem.isActive}
 													>
-														<Link href={subItem.path}>
+														<Link href={subItem.path ?? "#"}>
 															{subItem.icon}
 															<span>{subItem.title}</span>
 														</Link>
@@ -62,7 +62,7 @@ export function NavGroup({ label, items }: SidebarNavGroup) {
 								</>
 							) : (
 								<SidebarMenuButton asChild isActive={item.isActive}>
-									<Link href={item.path}>
+									<Link href={item.path ?? "#"}>
 										{item.icon}
 										<span>{item.title}</span>
 									</Link>

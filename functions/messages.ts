@@ -1,31 +1,22 @@
-import { conversation, document, message } from "@/db/schema";
+import { message } from "@/db/schema";
 import { db } from "@/db";
 import { eq } from "drizzle-orm";
 import { messageInsertSchema } from "@/db/schema";
 import * as z from "zod";
 
-export const getConversationIdByDocumentId = async (documentId: string) => {
-  const [result] = await db
-    .select({ id: conversation.id })
-    .from(conversation)
-    .innerJoin(document, eq(document.id, conversation.documentId))
-    .where(eq(document.id, documentId));
+export const createMessage = async (
+  values: z.infer<typeof messageInsertSchema>,
+) => {
+  const result = await db.insert(message).values(values).returning();
 
-  return result?.id || null;
+  return result;
 };
 
-export const createMessage = async (
-  conversationId: string,
-  body: z.infer<typeof messageInsertSchema>,
-) => {
-  const [result] = await db
-    .insert(message)
-    .values({
-      ...body,
-      conversationId,
-      role: "user",
-    })
-    .returning();
+export const getMessagesByConversationId = async (conversationId: string) => {
+  const result = await db
+    .select()
+    .from(message)
+    .where(eq(message.conversationId, conversationId));
 
   return result;
 };
