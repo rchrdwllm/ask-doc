@@ -7,7 +7,6 @@ import { createSupabaseClient } from "@/lib/supabase";
 import { randomUUID } from "crypto";
 import { MAX_FILE_SIZE } from "@/constants";
 import { conversationsRouter } from "./conversations";
-import { messagesRouter } from "./messages";
 import {
   createDocument,
   deleteDocument,
@@ -295,6 +294,5 @@ export const documentsRouter = new Elysia({ prefix: "/documents" })
     },
   )
   .use(conversationsRouter)
-  .use(messagesRouter)
   .use(documentChunksRouter)
   .use(retrievalRouter);

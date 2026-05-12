@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { usePathname } from "next/navigation";
 import { LogoIcon } from "@/components/app-shell/logo";
 import {
 	Sidebar,
@@ -28,6 +29,7 @@ export function AppSidebar() {
 	const [recentAccesses, setRecentAccesses] = useState<
 		Record<string, { id: string; title: string; accessedAt: string }>
 	>({});
+	const pathname = usePathname();
 
 	const loadRecentDocuments = useCallback(async () => {
 		setIsLoadingRecents(true);
@@ -144,7 +146,7 @@ export function AppSidebar() {
 					<SidebarGroup>
 						<SidebarMenuItem className="flex items-center gap-2">
 							<SidebarMenuButton
-								className="min-w-8 bg-primary text-primary-foreground duration-200 ease-linear hover:bg-primary/90 hover:text-primary-foreground active:bg-primary/90 active:text-primary-foreground"
+								className="min-w-8 bg-card text-foreground shadow-xs border border-input transition-colors"
 								tooltip="Upload Document"
 								onClick={() => setIsOpen(true)}
 							>
@@ -198,7 +200,7 @@ export function AppSidebar() {
 								<SidebarMenuButton
 									asChild
 									className="text-muted-foreground"
-									isActive={item.isActive}
+									isActive={pathname === item.path || pathname.startsWith(item.path + "/")}
 									size="sm"
 								>
 									<Link href={item.path || "#"}>

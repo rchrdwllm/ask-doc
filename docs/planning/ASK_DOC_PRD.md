@@ -1,11 +1,8 @@
-# Ask Doc - Product Requirements Document
+# AskDoc — Product Requirements Document
 
-**Version:** 1.0
-
-**Status:** Draft
-
-**Author:** William
-
+**Version:** 1.0  
+**Status:** Draft  
+**Author:** William  
 **Purpose:** Learning project + portfolio piece covering RAG, embeddings, vector search, and backend pipelines
 
 ---
@@ -34,23 +31,20 @@ AskDoc lets users upload PDF documents and ask natural language questions about 
 
 ### User Personas
 
-**Persona 1 — The Student**
-
+**Persona 1 — The Student**  
 A university student who needs to quickly pull specific information from research papers, textbooks, or lecture notes. Doesn't want to read the whole document. Wants direct answers with page-level references.
 
-**Persona 2 — The Professional**
-
+**Persona 2 — The Professional**  
 A working professional reviewing contracts, reports, or technical documentation. Needs to ask specific questions ("What are the payment terms?") and get grounded answers they can verify.
 
-**Persona 3 — William (Developer / Portfolio Reviewer)**
-
+**Persona 3 — William (Developer / Portfolio Reviewer)**  
 Evaluating the technical depth of the implementation. Looking for evidence of RAG architecture, vector search, streaming, and proper citation handling — not just a ChatGPT wrapper.
 
 ---
 
 ### User Stories & Acceptance Criteria
 
-### Auth
+#### Auth
 
 **Story:** As a user, I want to sign in with Google or email/password so that my documents are private to my account.
 
@@ -62,7 +56,7 @@ Evaluating the technical depth of the implementation. Looking for evidence of RA
 
 ---
 
-### Document Upload
+#### Document Upload
 
 **Story:** As a user, I want to upload a PDF so that I can ask questions about its contents.
 
@@ -77,7 +71,7 @@ Evaluating the technical depth of the implementation. Looking for evidence of RA
 
 ---
 
-### Document Processing Pipeline
+#### Document Processing Pipeline
 
 **Story:** As a system, I need to process an uploaded PDF into searchable chunks so that relevant sections can be retrieved at query time.
 
@@ -94,7 +88,7 @@ Evaluating the technical depth of the implementation. Looking for evidence of RA
 
 ---
 
-### Document Management
+#### Document Management
 
 **Story:** As a user, I want to see all my uploaded documents and delete ones I no longer need.
 
@@ -107,7 +101,7 @@ Evaluating the technical depth of the implementation. Looking for evidence of RA
 
 ---
 
-### Q&A Chat
+#### Q&A Chat
 
 **Story:** As a user, I want to ask natural language questions about a document and receive answers with source references.
 
@@ -119,7 +113,11 @@ Evaluating the technical depth of the implementation. Looking for evidence of RA
 - Citations are displayed below the answer as collapsible reference cards
 - If no relevant chunks are found (similarity score below threshold), the system responds: "I couldn't find relevant information in this document for that question." — it does not fabricate an answer
 - Users can ask follow-up questions; the last 6 messages are included in the LLM context window
-- Conversation history is persisted per document per user
+- A user can have multiple conversations per document; previous conversations are accessible in a sidebar
+- User can start a new conversation at any time without losing prior ones
+- Conversations are listed in the sidebar by auto-generated title (derived from first message) and creation date
+- User can delete a conversation; all its messages are removed
+- Conversation history is persisted across sessions
 
 ---
 
@@ -151,7 +149,7 @@ These are explicitly out of scope for the initial build:
 
 **Ingestion (runs once per document):**
 
-1. Extract raw text from PDF (server-side, `pdf-parse` or `pdfjs-dist`)
+1. Extract raw text from PDF using LangChain `PDFLoader` (per-page, server-side)
 2. Chunk text into ~500-token segments with 50-token overlap
 3. Tag each chunk with source page number(s)
 4. Generate embeddings for each chunk via `text-embedding-004`
@@ -206,57 +204,94 @@ Store eval results in `/evals/` directory as JSON. Re-run on every prompt or chu
 
 ### Tech Stack
 
-| Layer        | Technology                                                           |
-| ------------ | -------------------------------------------------------------------- |
-| Framework    | Next.js 16 (App Router)                                              |
-| Backend      | Elysia.js as Next.js route handler (`app/api/[[...slugs]]/route.ts`) |
-| Auth         | Better Auth (Google OAuth + credentials)                             |
-| Database     | Supabase (PostgreSQL + pgvector)                                     |
-| ORM          | Drizzle ORM                                                          |
-| API Client   | Eden Treaty (type-safe)                                              |
-| AI SDK       | Vercel AI SDK                                                        |
-| LLM          | Google Gemini 2.5 Flash                                              |
-| Embeddings   | Google `text-embedding-004`                                          |
-| File Storage | Supabase Storage                                                     |
-| PDF Parsing  | `pdfjs-dist` (server-side)                                           |
-| Styling      | Tailwind CSS + shadcn/ui                                             |
+| Layer                     | Technology                                                                         |
+| ------------------------- | ---------------------------------------------------------------------------------- |
+| Framework                 | Next.js 15 (App Router)                                                            |
+| Backend                   | Elysia.js as Next.js route handler (`app/api/[[...slugs]]/route.ts`)               |
+| Auth                      | Better Auth (Google OAuth + credentials)                                           |
+| Database                  | Supabase (PostgreSQL + pgvector)                                                   |
+| ORM                       | Drizzle ORM                                                                        |
+| API Client                | Eden Treaty (type-safe)                                                            |
+| AI SDK                    | Vercel AI SDK                                                                      |
+| LLM                       | Google Gemini 2.5 Flash                                                            |
+| Embeddings                | Google `gemini-embedding-001`                                                      |
+| File Storage              | Supabase Storage                                                                   |
+| PDF Extraction & Chunking | LangChain (`@langchain/community` WebPDFLoader + `RecursiveCharacterTextSplitter`) |
+| Styling                   | Tailwind CSS + shadcn/ui                                                           |
 
 ### Repo Structure
 
 ```
 /
-├── app/
-│   ├── api/
-│   │   └── [[...slugs]]/route.ts       # Elysia.js entry point
-│   ├── (auth)/
-│   │   └── login/page.tsx
-│   ├── (app)/
-│   │   ├── documents/page.tsx           # Document list
-│   │   ├── documents/[id]/page.tsx      # Q&A chat view
-│   │   └── layout.tsx
-│   └── layout.tsx
-├── api/
-│   ├── index.ts                         # Elysia app root
-│   └── routes/
-│       ├── documents.ts                 # Upload, list, delete
-│       ├── chat.ts                      # Q&A + streaming
-│       └── processing.ts               # Ingestion pipeline trigger
-├── db/
-│   ├── schema.ts
-│   └── index.ts
-├── lib/
-│   ├── pdf.ts                           # PDF text extraction
-│   ├── chunker.ts                       # Text chunking logic
-│   ├── embeddings.ts                    # Embedding generation
-│   └── retrieval.ts                     # Vector search queries
+├── app/                          # Next.js App Router pages
+│   ├── (app)/                    # Protected routes group
+│   │   ├── documents/            # Documents page
+│   │   │   └── page.tsx
+│   │   └── layout.tsx            # App layout
+│   ├── (auth)/                  # Auth routes group
+│   │   ├── login/               # Login page
+│   │   │   └── page.tsx
+│   │   ├── register/           # Register page
+│   │   │   └── page.tsx
+│   │   └── layout.tsx          # Auth layout
+│   ├── api/                     # API gateway (Next.js to Elysia)
+│   │   ├── [[...slugs]]/        # Catches all non-auth API routes
+│   │   │   └── route.ts
+│   │   └── auth/
+│   │       └── [...all]/route.ts # Better Auth routes
+│   ├── page.tsx                  # Landing page (public)
+│   ├── layout.tsx               # Root layout
+│   └── globals.css              # Global styles
 ├── components/
-├── hooks/
-└── types/
+│   ├── ui/                      # shadcn/ui components
+│   └── documents/               # Document-related components
+├── constants/                   # App constants
+│   └── index.ts
+├── db/                          # Database layer
+│   ├── index.ts                 # DB instance
+│   └── schema.ts               # Drizzle schema
+├── functions/                   # Business logic functions (actual database queries and operations)
+│   ├── documents.ts
+│   ├── conversations.ts
+│   ├── messages.ts
+│   └── document-chunks.ts
+├── lib/                         # Utilities and helpers
+│   ├── auth.ts                 # Server-side auth (Better Auth)
+│   ├── auth-client.ts          # Client-side auth client
+│   ├── api.ts                  # Eden treaty client
+│   ├── documents.ts            # Document processing functions (text extraction, chunking, embedding)
+│   ├── document-chunks.ts      # Document chunking and embedding functions
+│   ├── elyssia.ts              # Elysia app definition
+│   ├── supabase.ts             # Supabase client factory
+│   ├── schemas/                # Zod validation schemas
+│   │   └── auth.ts
+│   └── utils.ts                # Utility functions (cn, etc.)
+├── routers/                     # Elysia route definitions
+│   ├── health.ts
+│   ├── embeddings.ts
+│   └── documents/
+│       ├── index.ts
+│       ├── conversations.ts
+│       ├── messages.ts
+│       └── document-chunks.ts
+├── hooks/                      # Custom React hooks
+│   └── use-mobile.ts
+├── drizzle/                    # Drizzle config & migrations
+│   ├── meta/
+│   └── config.ts
+├── tests/                      # Test files
+│   └── api/
+│       └── eden.test.ts
+├── docs/planning/              # Project documentation
+├── package.json
+├── next.config.ts
+├── tsconfig.json
+└── tailwind.config.ts         # See postcss.config.mjs for v4 config
 ```
 
 ### Database Schema
 
-```tsx
+```ts
 // documents
 export const documents = pgTable("documents", {
   id: uuid("id").primaryKey().defaultRandom(),
@@ -312,12 +347,15 @@ export const messages = pgTable("messages", {
 
 | Method   | Path                               | Description                               |
 | -------- | ---------------------------------- | ----------------------------------------- |
-| `POST`   | `/api/documents/upload`            | Upload PDF, trigger processing            |
+| `POST`   | `/api/documents`                   | Upload PDF, trigger processing            |
 | `GET`    | `/api/documents`                   | List user's documents                     |
 | `GET`    | `/api/documents/:id`               | Get single document + status              |
 | `DELETE` | `/api/documents/:id`               | Delete document + chunks + storage        |
-| `POST`   | `/api/documents/:id/chat`          | Send message, stream response + citations |
-| `GET`    | `/api/documents/:id/conversations` | Get conversation history                  |
+| `POST`   | `/api/documents/:id/conversations` | Create a new conversation for a document  |
+| `GET`    | `/api/documents/:id/conversations` | List all conversations for a document     |
+| `DELETE` | `/api/conversations/:id`           | Delete a conversation + its messages      |
+| `POST`   | `/api/conversations/:id/messages`  | Send message, stream response + citations |
+| `GET`    | `/api/conversations/:id/messages`  | Get all messages for a conversation       |
 
 All routes require authentication. Return `404` (not `403`) for resources that don't belong to the requesting user.
 
@@ -339,20 +377,11 @@ All routes require authentication. Return `404` (not `403`) for resources that d
 
 ## 5. Risks & Roadmap
 
-### Phased Rollout
-
-**MVP (current scope)**
-
-- Auth (Google OAuth + credentials)
-- Single PDF upload + processing pipeline
-- Q&A chat with streaming + source citations
-- Document list + delete
-- Manual evals for citation accuracy
+### Future Versions (Post-MVP)
 
 **v1.1**
 
 - Multiple documents per session ("ask about Document A or B")
-- Conversation history sidebar per document
 - Retry failed document processing
 - Basic usage stats (tokens used, questions asked)
 
@@ -380,8 +409,246 @@ All routes require authentication. Return `404` (not `403`) for resources that d
 
 ## 6. Resolved Decisions
 
-| Decision                         | Resolution                                                                               |
-| -------------------------------- | ---------------------------------------------------------------------------------------- |
-| Conversation history persistence | Persisted per document per user across sessions. One conversation per document per user. |
-| Chunk size configurability       | Fixed for MVP — 500 tokens per chunk, 50-token overlap. Not user-configurable.           |
-| Duplicate document uploads       | Treated as a new document each time. No deduplication logic in MVP.                      |
+| Decision                         | Resolution                                                                                                                                                      |
+| -------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Conversation history persistence | Multiple conversations per document per user. Each conversation is persisted across sessions. Conversations are listed in a sidebar with auto-generated titles. |
+| Chunk size configurability       | Fixed for MVP — 500 tokens per chunk, 50-token overlap. Not user-configurable.                                                                                  |
+| Duplicate document uploads       | Treated as a new document each time. No deduplication logic in MVP.                                                                                             |
+
+---
+
+## 7. MVP Development Phases
+
+The MVP is broken into 6 sequential phases. Each phase has a clear scope, granular task list, and exit conditions that must pass before moving to the next phase.
+
+---
+
+### Phase 1 — Foundation & Auth
+
+**Goal:** Working Next.js app with authentication, protected routing, and Supabase connected.
+
+**Tasks:**
+
+- [ ] Scaffold Next.js 15 project with App Router, TypeScript, Tailwind CSS, shadcn/ui
+- [ ] Install and configure Better Auth with Google OAuth and credentials provider
+- [ ] Create Supabase project; add connection string to environment variables
+- [ ] Install and configure Drizzle ORM; connect to Supabase
+- [ ] Create initial Drizzle schema for `users` and `sessions` (Better Auth tables)
+- [ ] Run initial migration
+- [ ] Implement login page (`/login`) with Google OAuth button and email/password form
+- [ ] Implement protected layout — unauthenticated users redirect to `/login`
+- [ ] Implement sign out
+- [ ] Set up Elysia.js as a Next.js route handler at `app/api/[[...slugs]]/route.ts`
+- [ ] Add a health check route `GET /api/health` returning `{ status: "ok" }`
+- [ ] Set up Eden Treaty client in `lib/api.ts`
+
+**Exit Conditions:**
+
+- [ ] User can sign in with Google and email/password
+- [ ] Authenticated user lands on `/documents`; unauthenticated user is redirected to `/login`
+- [ ] Sign out clears the session and redirects to `/login`
+- [ ] `GET /api/health` returns 200
+- [ ] No TypeScript errors; app builds cleanly
+
+---
+
+### Phase 2 — Database Schema & API Layer
+
+**Goal:** Full database schema in place with all Elysia routes stubbed, validated, and returning correct shapes.
+
+**Tasks:**
+
+- [ ] Enable pgvector extension in Supabase (`CREATE EXTENSION IF NOT EXISTS vector`)
+- [ ] Extend Drizzle schema: `documents`, `document_chunks` (with vector column), `conversations`, `messages`
+- [ ] Run migration; verify all tables and the vector column exist in Supabase
+- [ ] Create private Supabase Storage bucket named `documents`
+- [ ] Implement all Elysia document routes with TypeBox validation:
+  - `POST /api/documents/upload` — stub, returns `{ id, status: "processing" }`
+  - `GET /api/documents` — returns empty array for now
+  - `GET /api/documents/:id` — returns `404` if not found or not owned by user
+  - `DELETE /api/documents/:id` — returns `404` if not found or not owned by user
+- [ ] Implement all Elysia conversation + message routes stubbed:
+  - `POST /api/documents/:id/conversations` — returns `{ id, title: null, createdAt }`
+  - `GET /api/documents/:id/conversations` — returns empty array
+  - `DELETE /api/conversations/:id` — returns `404` if not found or not owned by user
+  - `POST /api/conversations/:id/messages` — returns placeholder streamed text response
+  - `GET /api/conversations/:id/messages` — returns empty array
+- [ ] All routes verify session; unauthenticated requests return `401`
+- [ ] All routes return `404` (not `403`) for resources not owned by the requesting user
+
+**Exit Conditions:**
+
+- [ ] Migration runs cleanly; all tables visible in Supabase dashboard including `embedding vector(768)` column
+- [ ] All routes respond with correct status codes and shapes when tested manually (Hoppscotch or curl)
+- [ ] Unauthenticated requests to any route return `401`
+- [ ] Requesting another user's resource returns `404`
+- [ ] No TypeScript errors; app builds cleanly
+
+---
+
+### Phase 3 — Document Upload & Processing Pipeline
+
+**Goal:** User can upload a PDF. The system extracts text, chunks it, generates embeddings, and stores them in pgvector. Document status reflects the processing state in real time.
+
+**Tasks:**
+
+- [ ] Install `@langchain/community` and `langchain` for PDF loading and text splitting
+- [ ] Implement `lib/ingest.ts` — load a PDF buffer using LangChain's `PDFLoader` with `splitPages: true`, then split into ~500-token chunks with 50-token overlap using `RecursiveCharacterTextSplitter`; preserve `loc.pageNumber` metadata per chunk; return `{ content, pageNumbers, chunkIndex }[]`
+- [ ] Implement `lib/embeddings.ts` — generate embeddings for an array of strings using `text-embedding-004` via Google AI SDK; return `number[][]`
+- [ ] Wire up `POST /api/documents/upload`:
+  - Accept `multipart/form-data` with a PDF file
+  - Validate: PDF only, max 20MB (server-side MIME check)
+  - Upload raw file to Supabase Storage at `documents/{userId}/{documentId}.pdf`
+  - Insert document record with `status: "processing"`
+  - Return `{ id, status: "processing" }` immediately
+  - Trigger processing pipeline asynchronously (do not await in the request handler)
+- [ ] Implement async processing pipeline (called after upload response):
+  1. Fetch file buffer from Supabase Storage
+  2. Extract and chunk text via `lib/ingest.ts`
+  3. If no chunks produced, update status to `error` with message "Could not extract text — this may be a scanned PDF" and exit
+  4. Generate embeddings via `lib/embeddings.ts`
+  5. Batch insert all chunks + embeddings into `document_chunks`
+  6. Update document `status` to `ready`, set `pageCount`
+  7. On any unhandled error: update status to `error` with error message
+- [ ] Implement `GET /api/documents` — return user's documents with `id`, `filename`, `status`, `pageCount`, `createdAt`
+- [ ] Implement `GET /api/documents/:id` — return single document record
+- [ ] Implement `DELETE /api/documents/:id`:
+  - Delete file from Supabase Storage
+  - Delete all `document_chunks` for this document
+  - Delete all `conversations` and `messages` for this document
+  - Delete the `documents` record
+- [ ] Build documents list page (`/documents`):
+  - Shows filename, upload date, page count, status badge
+  - Upload button opens a file picker (PDF only)
+  - Polls `GET /api/documents/:id` every 3 seconds while status is `processing`
+  - Status badge updates to `ready` or `error` without page reload
+  - Delete button with confirmation dialog
+
+**Exit Conditions:**
+
+- [ ] Uploading a valid PDF creates a document record and triggers processing
+- [ ] After processing, `status` is `ready` and `document_chunks` rows exist in the DB with non-null embeddings
+- [ ] Uploading a non-PDF or a file over 20MB returns a clear error; no record is created
+- [ ] Uploading a scanned/image-only PDF sets status to `error` with the appropriate message
+- [ ] Deleting a document removes the file, all chunks, and all conversations from the DB
+- [ ] Status badge on the documents list page updates in real time without a full page reload
+- [ ] No TypeScript errors; app builds cleanly
+
+---
+
+### Phase 4 — RAG Query Engine
+
+**Goal:** User can ask questions about a document and receive streamed, cited answers grounded in the document's content.
+
+**Tasks:**
+
+- [ ] Implement `lib/retrieval.ts`:
+  - Generate embedding for the user's query
+  - Run cosine similarity search against `document_chunks` for the given `documentId`
+  - Return top-5 chunks with similarity score ≥ 0.75
+  - Return empty array (no hallucination) if no chunks meet the threshold
+- [ ] Wire up `POST /api/documents/:id/conversations`:
+  - Create a new `conversations` record with `title: null`
+  - Return `{ id, title, createdAt }`
+- [ ] Wire up `GET /api/documents/:id/conversations`:
+  - Return all conversations for this document owned by the user
+  - Include `id`, `title`, `createdAt` per conversation
+- [ ] Wire up `DELETE /api/conversations/:id`:
+  - Verify ownership; return `404` if not found or not owned
+  - Delete all messages in the conversation, then the conversation record
+- [ ] Wire up `POST /api/conversations/:id/messages`:
+  - Validate request body: `{ message: string }`
+  - Verify conversation ownership; return `404` if not found or not owned
+  - Retrieve parent `documentId` from the conversation record
+  - Retrieve top-5 chunks via `lib/retrieval.ts`
+  - If no chunks found, stream back the refusal message without calling Gemini
+  - Construct prompt: system prompt + retrieved chunks as context + last 6 messages from this conversation
+  - Stream response from Gemini 2.5 Flash via Vercel AI SDK
+  - On stream completion:
+    - Persist user message + assistant message (with `sourceChunkIds`) to `messages` table
+    - If conversation `title` is still null, generate a short title from the first user message (5 words max) and update the conversation record
+  - Return streaming response + `sourceChunkIds` as a stream event
+- [ ] Wire up `GET /api/conversations/:id/messages`:
+  - Verify ownership; return `404` if not found or not owned
+  - Return all messages ordered by `createdAt` ascending
+- [ ] Build chat UI (`/documents/[id]`):
+  - Two-panel layout: left sidebar (conversation list) + right main area (active chat)
+  - Sidebar lists all conversations for the document with title and creation date; most recent first
+  - "New conversation" button in sidebar creates a new conversation and activates it
+  - Clicking a conversation in the sidebar loads its messages into the main area
+  - Active conversation highlighted in sidebar
+  - Delete button per conversation in sidebar with confirmation
+  - Message input + send button in main area
+  - Streamed assistant response renders word-by-word
+  - Source citation cards displayed below each assistant message (chunk excerpt + page number)
+  - Citation cards are collapsible
+  - Refusal message displayed inline (no citation cards)
+  - Loading state while awaiting first stream token
+  - If no conversations exist yet, one is created automatically on page load
+
+**Exit Conditions:**
+
+- [ ] Asking a question covered by the document returns a streamed answer with at least one citation
+- [ ] Asking a question not covered by the document returns the refusal message with no citations
+- [ ] Citations reference real chunks — verified manually against the source PDF
+- [ ] Creating a new conversation appears immediately in the sidebar
+- [ ] Switching between conversations loads the correct message history
+- [ ] Deleting a conversation removes it from the sidebar and its messages from the DB
+- [ ] Conversation title auto-generates from the first message and appears in the sidebar
+- [ ] Follow-up questions in the same conversation maintain context from prior messages
+- [ ] No TypeScript errors; app builds cleanly
+
+---
+
+### Phase 5 — UI Polish & Edge Cases
+
+**Goal:** All user-facing flows are complete, error states are handled, and the app is presentable as a portfolio piece.
+
+**Tasks:**
+
+- [ ] Empty state on documents list page ("No documents yet — upload your first PDF")
+- [ ] Empty state in chat main area when a brand new conversation has no messages yet
+- [ ] Error state on documents list for documents with `status: "error"` (message + delete option)
+- [ ] Disable chat input while document is still `processing`
+- [ ] Handle network errors on upload (retry prompt)
+- [ ] Handle Gemini rate limit errors gracefully (user-facing message, not a crash)
+- [ ] Disable send button while a response is streaming
+- [ ] Add a loading skeleton to the documents list page and conversation sidebar
+- [ ] Add page title and meta tags
+- [ ] Responsive layout — usable on tablet and desktop
+- [ ] Smooth scroll to latest message in chat
+- [ ] Truncate long conversation titles in sidebar to a single line
+
+**Exit Conditions:**
+
+- [ ] All empty and error states render correctly
+- [ ] No unhandled promise rejections or console errors in normal usage flows
+- [ ] App is usable on a 768px-wide viewport
+- [ ] Upload, processing, chatting, conversation switching, and deletion flows all work end-to-end without a page reload
+
+---
+
+### Phase 6 — Evals & Deployment
+
+**Goal:** AI output quality is measured and documented. App is live and the codebase is portfolio-ready.
+
+**Tasks:**
+
+- [ ] Create `/evals/` directory in the repo
+- [ ] Select 2 test documents: one short (~10 pages), one long (~50 pages)
+- [ ] Write 20 test questions per document (10 answerable, 10 unanswerable)
+- [ ] Create `evals/run.ts` — a script that sends each question to the chat API and logs the response + cited chunks to a JSON file
+- [ ] Manually score results against the eval criteria (citation accuracy ≥ 90%, hallucination rate 0%, refusal accuracy 100%)
+- [ ] Save results to `evals/results-v1.json`
+- [ ] Tune similarity threshold or prompt if scores fall below target; re-run and save new results
+- [ ] Write `README.md` covering: what the project is, the RAG architecture, tech stack, how to run locally, eval results summary
+- [ ] Deploy to Railway (backend) or Vercel (full app); confirm production environment variables are set
+- [ ] Smoke test all flows in production
+
+**Exit Conditions:**
+
+- [ ] Eval results meet targets: citation accuracy ≥ 90%, hallucination rate 0%, refusal accuracy 100%
+- [ ] `evals/results-v1.json` committed to the repo
+- [ ] `README.md` written and covers architecture decisions
+- [ ] App is live and accessible via a public URL
+- [ ] All six phases' exit conditions remain passing in production
