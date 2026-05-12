@@ -4,6 +4,7 @@ import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import "./globals.css";
 import { cn } from "@/lib/utils";
+import TopLoaderWrapper from "@/components/wrappers/toploader-wrapper";
 
 const loraHeading = Lora({ subsets: ['latin'], variable: '--font-heading' });
 
@@ -35,7 +36,9 @@ export default function RootLayout({
     >
       <body suppressHydrationWarning className="min-h-full flex flex-col">
         <TooltipProvider>
-          {children}
+          <TopLoaderWrapper>
+            {children}
+          </TopLoaderWrapper>
           <Toaster />
         </TooltipProvider>
       </body>
