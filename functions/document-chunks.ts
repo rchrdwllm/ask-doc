@@ -35,3 +35,17 @@ export const getSimilarDocumentChunksByDocumentId = async (
 
   return result;
 };
+
+export const getSimilarDocumentChunks = async (embedding: number[]) => {
+  const similarity = sql<number>`1 - (${cosineDistance(documentChunk.embedding, embedding)})`;
+  const documentChunkColumns = getTableColumns(documentChunk);
+
+  const result = await db
+    .select({ similarity, ...documentChunkColumns })
+    .from(documentChunk)
+    .where(gt(similarity, 0.8))
+    .orderBy((t) => desc(t.similarity))
+    .limit(5);
+
+  return result;
+};
