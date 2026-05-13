@@ -20,6 +20,7 @@ import { Separator } from "@/components/ui/separator"
 import {
   DropdownMenu,
   DropdownMenuContent,
+  DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
@@ -30,13 +31,20 @@ import { formatDate } from "@/lib/documents"
 type DocumentsGridProps = {
   documents: DocumentDisplay[]
   onDelete: (doc: DocumentDisplay) => void
+  onOpen: (doc: DocumentDisplay) => void
+  onView: (doc: DocumentDisplay) => void
 }
 
-export function DocumentsGrid({ documents, onDelete }: DocumentsGridProps) {
+export function DocumentsGrid({ documents, onDelete, onOpen, onView }: DocumentsGridProps) {
   return (
     <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
       {documents.map((doc) => (
-        <Card key={doc.id} id={`document-${doc.id}`} className="group cursor-pointer transition-shadow hover:shadow-md">
+        <Card
+          key={doc.id}
+          id={`document-${doc.id}`}
+          className="group cursor-pointer transition-shadow hover:shadow-md"
+          onClick={() => onOpen(doc)}
+        >
           <CardHeader>
             <div className="flex items-start justify-between">
               <div className="flex size-10 items-center justify-center rounded-lg bg-muted">
@@ -48,24 +56,40 @@ export function DocumentsGrid({ documents, onDelete }: DocumentsGridProps) {
                     variant="ghost"
                     size="icon"
                     className="size-8 opacity-0 transition-opacity group-hover:opacity-100"
+                    onClick={(event) => event.stopPropagation()}
                   >
                     <MoreHorizontal />
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-48">
-                  <DropdownMenuItem>
-                    <Eye />
-                    View
-                  </DropdownMenuItem>
-                  <DropdownMenuItem>
-                    <Download />
-                    Download
-                  </DropdownMenuItem>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem variant="destructive" onSelect={() => onDelete(doc)}>
-                    <Trash2 />
-                    Delete
-                  </DropdownMenuItem>
+                  <DropdownMenuGroup>
+                    <DropdownMenuItem
+                      onSelect={(event) => {
+                        event.preventDefault()
+                        onView(doc)
+                      }}
+                      onClick={(event) => event.stopPropagation()}
+                    >
+                      <Eye />
+                      View
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={(event) => event.stopPropagation()}>
+                      <Download />
+                      Download
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem
+                      variant="destructive"
+                      onSelect={(event) => {
+                        event.preventDefault()
+                        onDelete(doc)
+                      }}
+                      onClick={(event) => event.stopPropagation()}
+                    >
+                      <Trash2 />
+                      Delete
+                    </DropdownMenuItem>
+                  </DropdownMenuGroup>
                 </DropdownMenuContent>
               </DropdownMenu>
             </div>

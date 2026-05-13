@@ -14,12 +14,14 @@ import { DocumentsGrid } from "@/components/documents/documents-grid"
 import { DocumentsEmptyState } from "@/components/documents/documents-empty-state"
 import { DocumentsButtonGroup } from "@/components/documents/documents-button-group"
 import { DocumentsDeleteDialog } from "@/components/documents/documents-delete-dialog"
+import { useRouter } from "@bprogress/next/app"
 
 type DocumentsClientProps = {
   documents: DocumentRow[]
 }
 
 export default function DocumentsClient({ documents }: DocumentsClientProps) {
+  const router = useRouter()
   const [viewMode, setViewMode] = useState<ViewMode>("list")
   const [documentItems, setDocumentItems] = useState<DocumentDisplay[]>(() =>
     documents.map((doc) => ({
@@ -80,6 +82,14 @@ export default function DocumentsClient({ documents }: DocumentsClientProps) {
     }
   }
 
+  const handleOpenDocument = (doc: DocumentDisplay) => {
+    router.push(`/documents/${doc.id}`)
+  }
+
+  const handleViewDocument = (doc: DocumentDisplay) => {
+    router.push(`/documents/${doc.id}?view=true`)
+  }
+
   return (
     <main className="flex flex-col gap-6 p-8">
       <div className="flex flex-col gap-1">
@@ -116,9 +126,19 @@ export default function DocumentsClient({ documents }: DocumentsClientProps) {
       {documentItems.length === 0 ? (
         <DocumentsEmptyState onUpload={() => setIsUploadOpen(true)} />
       ) : viewMode === "list" ? (
-        <DocumentsList documents={documentItems} onDelete={handleDeleteOpen} />
+        <DocumentsList
+          documents={documentItems}
+          onDelete={handleDeleteOpen}
+          onOpen={handleOpenDocument}
+          onView={handleViewDocument}
+        />
       ) : (
-        <DocumentsGrid documents={documentItems} onDelete={handleDeleteOpen} />
+        <DocumentsGrid
+          documents={documentItems}
+          onDelete={handleDeleteOpen}
+          onOpen={handleOpenDocument}
+          onView={handleViewDocument}
+        />
       )}
 
       <UploadDialog open={isUploadOpen} onOpenChange={setIsUploadOpen} />
