@@ -1,8 +1,9 @@
-import { CalendarDays, Eye, List, FileText, MessageSquare } from "lucide-react"
+import { CalendarDays, Eye, List, FileText } from "lucide-react"
 import Link from "next/link"
 import { headers } from "next/headers"
 import { client } from "@/lib/api"
 import { Button } from "@/components/ui/button"
+import { DocumentConversationsEmptyClient } from "@/components/documents/document-conversations-empty-client"
 import {
   Card,
   CardContent,
@@ -12,14 +13,6 @@ import {
 } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
-import {
-  Empty,
-  EmptyContent,
-  EmptyDescription,
-  EmptyHeader,
-  EmptyMedia,
-  EmptyTitle,
-} from "@/components/ui/empty"
 import { formatDate } from "@/lib/documents"
 
 type DocumentPageProps = {
@@ -179,20 +172,7 @@ export default async function DocumentPage({
                 ))}
               </div>
             ) : (
-              <Empty>
-                <EmptyHeader>
-                  <EmptyMedia variant="icon">
-                    <MessageSquare />
-                  </EmptyMedia>
-                  <EmptyTitle>No conversations yet</EmptyTitle>
-                  <EmptyDescription>
-                    Start a new question to create the first thread.
-                  </EmptyDescription>
-                </EmptyHeader>
-                <EmptyContent>
-                  <Button disabled>Start conversation</Button>
-                </EmptyContent>
-              </Empty>
+              <DocumentConversationsEmptyClient documentId={data.id} />
             )}
           </CardContent>
         </Card>
