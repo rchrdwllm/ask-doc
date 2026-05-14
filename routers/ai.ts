@@ -4,6 +4,7 @@ import * as z from "zod";
 import { streamText } from "ai";
 import { google } from "@ai-sdk/google";
 import { retrieveInformation } from "@/lib/retrieval";
+import { client } from "@/lib/api";
 
 export const aiRouter = new Elysia({ prefix: "/ai" }).post(
   "/chat",
@@ -24,8 +25,21 @@ export const aiRouter = new Elysia({ prefix: "/ai" }).post(
           inputSchema: z.object({
             question: z.string(),
           }),
-          execute: async ({ question }) =>
-            retrieveInformation(question, documentId),
+          execute: async ({ question }) => {
+            const { data, error } = await client.embeddings.query.post({
+              query: question,
+            });
+
+            if (error || !data) {
+              console.error("Failed to create embedding for question:", error);
+
+              return "Sorry, I don't know.";
+            }
+
+            const result = await retrieveInformation(data, documentId);
+
+            return result;
+          },
         }),
       },
     });

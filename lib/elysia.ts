@@ -3,6 +3,7 @@ import { auth } from "@/lib/auth";
 import { healthRouter } from "@/routers/health";
 import { documentsRouter } from "@/routers/documents";
 import { aiRouter } from "@/routers/ai";
+import { embeddingsRouter } from "@/routers/embeddings";
 
 const app = new Elysia({ prefix: "/api" })
   .onError(({ code, error, set }) => {
@@ -24,7 +25,8 @@ const app = new Elysia({ prefix: "/api" })
   .mount(auth.handler)
   .use(healthRouter)
   .use(documentsRouter)
-  .use(aiRouter);
+  .use(aiRouter)
+  .use(embeddingsRouter);
 
 export const handler = app.handle;
 

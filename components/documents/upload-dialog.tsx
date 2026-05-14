@@ -18,7 +18,6 @@ import { documentChunkInsertSchema } from "@/db/schema";
 import * as z from 'zod';
 import { MAX_FILE_SIZE } from "@/constants";
 import { toast } from "sonner";
-import { createChunkEmbeddings } from "@/lib/embeddings";
 
 interface UploadDialogProps {
   open: boolean;
@@ -101,7 +100,19 @@ export function UploadDialog({ open, onOpenChange }: UploadDialogProps) {
         return;
       }
 
-      const chunksWithEmbeddings = await createChunkEmbeddings(chunks);
+      const { data: chunksWithEmbeddings, error: embeddingError } = await client.embeddings.chunks.post({ chunks });
+
+      if (embeddingError || !chunksWithEmbeddings) {
+        setError(embeddingError.value.message || "Failed to create embeddings for chunks");
+        setFile(null)
+
+        await client.documents({ id: data.id }).patch({ status: "error" });
+
+        toast.error(embeddingError.value.message || "Failed to create embeddings for chunks");
+        router.refresh();
+
+        return;
+      }
 
       const chunksInsertMap: z.infer<typeof documentChunkInsertSchema>[] = chunksWithEmbeddings.map((chunk, idx) => ({
         id: crypto.randomUUID(),
