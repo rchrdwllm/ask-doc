@@ -53,9 +53,9 @@ export default async function ConversationPage({ params }: ConversationPageProps
   await params
 
   return (
-    <main className="flex min-h-screen flex-col p-8">
-      <div className="grid flex-1 gap-6 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
-        <section className="flex min-h-0 flex-col gap-4">
+    <main className="flex flex-1 flex-col gap-4 p-0 md:p-0">
+      <div className="grid flex-1 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
+        <section className="flex min-h-0 flex-col gap-4 p-4 bg-muted">
           <div className="flex flex-col gap-1">
             <h2 className="font-heading text-xl font-semibold">Document preview</h2>
             <p className="text-sm text-muted-foreground">
@@ -72,7 +72,7 @@ export default async function ConversationPage({ params }: ConversationPageProps
           </div>
         </section>
 
-        <section className="flex min-h-0 flex-col gap-4">
+        <section className="flex min-h-0 flex-col gap-4 p-4 border-l border-border">
           <div className="flex flex-col gap-1">
             <h2 className="font-heading text-xl font-semibold">Messages</h2>
             <p className="text-sm text-muted-foreground">
