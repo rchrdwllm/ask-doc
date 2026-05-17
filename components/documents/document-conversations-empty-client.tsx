@@ -31,8 +31,6 @@ export function DocumentConversationsEmptyClient({
       return;
     }
 
-    console.log({ data });
-
     router.push(`/documents/${documentId}/conversations/${data.id}`);
   }
 

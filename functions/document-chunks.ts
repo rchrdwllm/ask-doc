@@ -29,7 +29,7 @@ export const getSimilarDocumentChunksByDocumentId = async (
   const result = await db
     .select({ similarity, ...documentChunkColumns })
     .from(documentChunk)
-    .where(and(gt(similarity, 0.8), eq(documentChunk.documentId, documentId)))
+    .where(and(gt(similarity, 0.5), eq(documentChunk.documentId, documentId)))
     .orderBy((t) => desc(t.similarity))
     .limit(5);
 
@@ -43,7 +43,7 @@ export const getSimilarDocumentChunks = async (embedding: number[]) => {
   const result = await db
     .select({ similarity, ...documentChunkColumns })
     .from(documentChunk)
-    .where(gt(similarity, 0.8))
+    .where(gt(similarity, 0.5))
     .orderBy((t) => desc(t.similarity))
     .limit(5);
 
