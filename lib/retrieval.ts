@@ -7,9 +7,15 @@ export const retrieveInformation = async (
   embedding: number[],
   documentId?: string,
 ) => {
-  if (documentId) {
-    return getSimilarDocumentChunksByDocumentId(embedding, documentId);
-  } else {
-    return getSimilarDocumentChunks(embedding);
+  try {
+    if (documentId) {
+      return {
+        data: await getSimilarDocumentChunksByDocumentId(embedding, documentId),
+      };
+    } else {
+      return { data: await getSimilarDocumentChunks(embedding) };
+    }
+  } catch (error) {
+    return { error };
   }
 };
