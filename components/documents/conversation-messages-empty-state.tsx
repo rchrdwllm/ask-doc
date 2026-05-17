@@ -1,0 +1,31 @@
+"use client"
+
+import { MessageSquare } from "lucide-react"
+import {
+  Empty, EmptyDescription,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle
+} from "@/components/ui/empty"
+
+type ConversationMessagesEmptyStateProps = {
+  onPrompt: () => void
+}
+
+export function ConversationMessagesEmptyState({
+  onPrompt,
+}: ConversationMessagesEmptyStateProps) {
+  return (
+    <Empty>
+      <EmptyHeader>
+        <EmptyMedia variant="icon">
+          <MessageSquare />
+        </EmptyMedia>
+        <EmptyTitle>No messages yet</EmptyTitle>
+        <EmptyDescription>
+          Ask your first question to start this conversation.
+        </EmptyDescription>
+      </EmptyHeader>
+    </Empty>
+  )
+}

@@ -270,3 +270,4 @@ export type ConversationRow = InferSelectModel<typeof conversation>;
 export type MessageRow = InferSelectModel<typeof message>;
 export type MessageInsert = InferInsertModel<typeof message>;
 export type DocumentStatus = (typeof documentStatusEnum.enumValues)[number];
+export type MessageRole = (typeof messageRoleEnum.enumValues)[number];
