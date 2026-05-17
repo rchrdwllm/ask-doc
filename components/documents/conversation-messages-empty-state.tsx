@@ -8,13 +8,7 @@ import {
   EmptyTitle
 } from "@/components/ui/empty"
 
-type ConversationMessagesEmptyStateProps = {
-  onPrompt: () => void
-}
-
-export function ConversationMessagesEmptyState({
-  onPrompt,
-}: ConversationMessagesEmptyStateProps) {
+export function ConversationMessagesEmptyState() {
   return (
     <Empty>
       <EmptyHeader>
