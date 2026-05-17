@@ -42,7 +42,7 @@ export function DocumentsGrid({ documents, onDelete, onOpen, onView }: Documents
         <Card
           key={doc.id}
           id={`document-${doc.id}`}
-          className="group cursor-pointer transition-shadow hover:shadow-md"
+          className="group cursor-pointer border transition-colors hover:border-primary"
           onClick={() => onOpen(doc)}
         >
           <CardHeader>
