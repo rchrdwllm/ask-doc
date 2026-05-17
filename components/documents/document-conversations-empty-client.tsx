@@ -10,6 +10,9 @@ import {
   EmptyMedia,
   EmptyTitle,
 } from "@/components/ui/empty"
+import { client } from "@/lib/api"
+import { toast } from "sonner"
+import { useRouter } from "@bprogress/next/app"
 
 type DocumentConversationsEmptyClientProps = {
   documentId: string
@@ -18,8 +21,19 @@ type DocumentConversationsEmptyClientProps = {
 export function DocumentConversationsEmptyClient({
   documentId,
 }: DocumentConversationsEmptyClientProps) {
-  const handleStart = () => {
-    void documentId
+  const router = useRouter();
+
+  const handleStart = async () => {
+    const { data, error } = await client.documents({ id: documentId }).conversations.post();
+
+    if (error) {
+      toast.error(error.value.message || "Failed to start conversation");
+      return;
+    }
+
+    console.log({ data });
+
+    router.push(`/documents/${documentId}/conversations/${data.id}`);
   }
 
   return (
