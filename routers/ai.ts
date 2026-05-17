@@ -1,55 +1,115 @@
-import { convertToModelMessages, stepCountIs, tool, UIMessage } from "ai";
+import {
+  APICallError,
+  convertToModelMessages,
+  UIMessage,
+  streamText,
+  stepCountIs,
+  tool,
+} from "ai";
 import { Elysia } from "elysia";
 import * as z from "zod";
-import { streamText } from "ai";
 import { google } from "@ai-sdk/google";
-import { retrieveInformation } from "@/lib/retrieval";
+import { headers } from "next/headers";
 import { client } from "@/lib/api";
+import { retrieveInformation } from "@/lib/retrieval";
 
 export const aiRouter = new Elysia({ prefix: "/ai" }).post(
   "/chat",
-  async ({ body }) => {
-    const { messages, documentId } = body;
+  async ({ body, status }) => {
+    const { messages, documentId, conversationId } = body;
+    const incoming = await headers();
+    const cookieHeader = incoming.get("cookie") ?? "";
 
-    const result = streamText({
-      model: google("gemini-2.0-flash"),
-      messages: await convertToModelMessages(messages),
-      stopWhen: stepCountIs(5),
-      system: `You are a helpful assistant. Check your knowledge base before answering any questions.
-    Only respond to questions using information from tool calls.
-    if no relevant information is found in the tool calls, respond, "Sorry, I don't know."`,
-      tools: {
-        getInformation: tool({
-          description:
-            "Get relevant information from the knowledge base based on the question and document ID.",
-          inputSchema: z.object({
-            question: z.string(),
+    try {
+      const result = streamText({
+        model: google("gemini-2.5-flash"),
+        messages: await convertToModelMessages(messages),
+        stopWhen: stepCountIs(5),
+        system: `You are a helpful assistant. Check your knowledge base before answering any questions.
+        Only respond to questions using information from tool calls.
+        if no relevant information is found in the tool calls, respond, "Sorry, I don't know."`,
+        tools: {
+          getInformation: tool({
+            description:
+              "Get relevant information from the knowledge base based on the question and document ID.",
+            inputSchema: z.object({
+              question: z.string(),
+            }),
+            execute: async ({ question }) => {
+              const { data, error } = await client.embeddings.query.post(
+                {
+                  query: question,
+                },
+                {
+                  headers: {
+                    cookie: cookieHeader,
+                  },
+                },
+              );
+
+              if (error || !data) {
+                console.error(
+                  "Failed to create embedding for question:",
+                  error,
+                );
+
+                return "Sorry, I don't know.";
+              }
+
+              const { data: result, error: retrieveError } =
+                await retrieveInformation(data, documentId);
+
+              if (retrieveError || !result) {
+                console.error(
+                  "No relevant information found for query:",
+                  question,
+                );
+
+                return "Sorry, I don't know.";
+              }
+
+              return result;
+            },
           }),
-          execute: async ({ question }) => {
-            const { data, error } = await client.embeddings.query.post({
-              query: question,
-            });
+        },
+      });
 
-            if (error || !data) {
-              console.error("Failed to create embedding for question:", error);
+      return status(200, result.toUIMessageStreamResponse());
+    } catch (error) {
+      if (APICallError.isInstance(error)) {
+        if (error.statusCode === 429) {
+          return status(429, {
+            message: "Quota reached. Please try again later.",
+          });
+        }
 
-              return "Sorry, I don't know.";
-            }
+        return status(502, {
+          message: "Upstream AI error.",
+        });
+      }
 
-            const result = await retrieveInformation(data, documentId);
-
-            return result;
-          },
-        }),
-      },
-    });
-
-    return result.toUIMessageStreamResponse();
+      return status(500, {
+        message: "Unexpected error.",
+      });
+    }
   },
   {
     body: z.object({
       messages: z.array(z.custom<UIMessage>()),
-      documentId: z.string().optional(),
+      documentId: z.string(),
+      conversationId: z.string(),
     }),
+    response: {
+      200: z.custom<any>(),
+      429: z.object({
+        message: z.string(),
+      }),
+      502: z.object({
+        message: z.string(),
+      }),
+      500: z.object({
+        message: z.string(),
+      }),
+    },
   },
 );
