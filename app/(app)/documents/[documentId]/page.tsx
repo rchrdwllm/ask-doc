@@ -16,26 +16,26 @@ import { Separator } from "@/components/ui/separator"
 import { formatDate } from "@/lib/documents"
 
 type DocumentPageProps = {
-  params: { id: string }
-  searchParams: { view?: string }
+  params: Promise<{ documentId: string }>
+  searchParams: Promise<{ view?: string }>
 }
 
 export default async function DocumentPage({
   params,
   searchParams,
 }: DocumentPageProps) {
-  const { id } = await params
+  const { documentId } = await params
   const { view } = await searchParams
   const isViewingDocument = view === "true"
   const incoming = await headers()
   const cookieHeader = incoming.get("cookie") ?? ""
-  const { data, error } = await client.documents({ id }).get({
+  const { data, error } = await client.documents({ id: documentId }).get({
     headers: {
       cookie: cookieHeader,
     },
   })
   const { data: conversations } = await client
-    .documents({ id })
+    .documents({ id: documentId })
     .conversations.get({
       headers: {
         cookie: cookieHeader,
