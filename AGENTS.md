@@ -73,7 +73,7 @@ Always use `bun` for package management and scripts.
 │   ├── api.ts                  # Eden treaty client
 │   ├── documents.ts            # Document processing functions (text extraction, chunking, embedding)
 │   ├── document-chunks.ts      # Document chunking and embedding functions
-│   ├── elyssia.ts              # Elysia app definition
+│   ├── elysia.ts              # Elysia app definition
 │   ├── supabase.ts             # Supabase client factory
 │   ├── schemas/                # Zod validation schemas
 │   │   └── auth.ts
