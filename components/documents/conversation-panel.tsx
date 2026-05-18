@@ -56,7 +56,7 @@ export default function ConversationPanel({
         <h2 className="font-heading text-xl font-semibold">Messages</h2>
       </div>
       {newMessages.length ? (
-        <div className="flex h-full flex-col gap-4 p-4">
+        <div className="flex h-auto overflow-y-auto flex-col gap-4 p-4">
           {newMessages.map((message) => (
             <Message from={message.role} key={message.id}>
               <MessageContent>
@@ -107,16 +107,18 @@ export default function ConversationPanel({
           <ConversationMessagesEmptyState />
         </div>
       )}
-      <Separator />
-      <div className="flex flex-col gap-4 p-4">
-        <PromptInput onSubmit={handleSubmit}>
-          <PromptInputTextarea
-            placeholder="Ask a question about this document..."
-          />
-          <PromptInputFooter>
-            <PromptInputSubmit />
-          </PromptInputFooter>
-        </PromptInput>
+      <div className="mt-auto">
+        <Separator />
+        <div className="flex flex-col gap-4 p-4">
+          <PromptInput onSubmit={handleSubmit}>
+            <PromptInputTextarea
+              placeholder="Ask a question about this document..."
+            />
+            <PromptInputFooter>
+              <PromptInputSubmit />
+            </PromptInputFooter>
+          </PromptInput>
+        </div>
       </div>
     </section>
   )
