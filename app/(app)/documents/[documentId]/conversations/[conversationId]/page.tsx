@@ -28,13 +28,21 @@ export default async function ConversationPage({
     headers: {
       cookie: cookieHeader,
     },
-  })
+  });
+
+  if (!data) {
+    return (
+      <div className="flex h-full items-center justify-center">
+        <p>Conversation not found</p>
+      </div>
+    )
+  }
 
   return (
     <main className="flex h-full flex-col gap-4 p-0 md:p-0">
       <div className="grid h-full lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
         <DocumentViewerPanel />
-        <ConversationPanel messages={data ?? []} />
+        <ConversationPanel messages={data} />
       </div>
     </main>
   )

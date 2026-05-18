@@ -4,12 +4,12 @@ import { cn } from "@/lib/utils";
 import { Separator } from "@/components/ui/separator";
 import { AppBreadcrumbs } from "@/components/app-shell/app-breadcrumbs";
 import { CustomSidebarTrigger } from "@/components/app-shell/custom-sidebar-trigger";
-import { navLinks } from "@/components/app-shell/app-shared";
 import { NavUser } from "@/components/app-shell/nav-user";
-
-const activeItem = navLinks.find((item) => item.isActive);
+import { useAppBreadcrumbs } from "@/hooks/use-app-breadcrumbs";
 
 export function AppHeader() {
+	const breadcrumbs = useAppBreadcrumbs();
+
 	return (
 		<header
 			className={cn(
@@ -22,7 +22,7 @@ export function AppHeader() {
 					className="mr-2 h-4 data-[orientation=vertical]:self-center"
 					orientation="vertical"
 				/>
-				<AppBreadcrumbs page={activeItem} />
+				<AppBreadcrumbs items={breadcrumbs} />
 			</div>
 			<div className="flex items-center gap-3">
 				<Separator

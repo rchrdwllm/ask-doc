@@ -5,6 +5,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import "./globals.css";
 import { cn } from "@/lib/utils";
 import TopLoaderWrapper from "@/components/wrappers/toploader-wrapper";
+import { ReactQueryProvider } from "@/components/providers/react-query-provider";
 
 const loraHeading = Lora({ subsets: ['latin'], variable: '--font-heading' });
 
@@ -36,9 +37,11 @@ export default function RootLayout({
     >
       <body suppressHydrationWarning className="min-h-full flex flex-col">
         <TooltipProvider>
-          <TopLoaderWrapper>
-            {children}
-          </TopLoaderWrapper>
+          <ReactQueryProvider>
+            <TopLoaderWrapper>
+              {children}
+            </TopLoaderWrapper>
+          </ReactQueryProvider>
           <Toaster />
         </TooltipProvider>
       </body>
