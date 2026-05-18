@@ -8,7 +8,6 @@ import {
 } from "ai";
 import { Elysia } from "elysia";
 import * as z from "zod";
-import { google } from "@ai-sdk/google";
 import { headers } from "next/headers";
 import { client } from "@/lib/api";
 import { retrieveInformation } from "@/lib/retrieval";
@@ -22,12 +21,12 @@ export const aiRouter = new Elysia({ prefix: "/ai" }).post(
 
     try {
       const result = streamText({
-        model: google("gemini-2.5-flash"),
+        model: "openai/gpt-oss-20b",
         messages: await convertToModelMessages(messages),
         stopWhen: stepCountIs(5),
         system: `You are a helpful assistant. Check your knowledge base before answering any questions.
         Only respond to questions using information from tool calls.
-        if no relevant information is found in the tool calls, respond, "Sorry, I don't know."`,
+        if no relevant information is found in the tool calls, respond with your best guess based on your training data, but make sure to indicate that it's a guess.`,
         tools: {
           getInformation: tool({
             description:
@@ -74,7 +73,10 @@ export const aiRouter = new Elysia({ prefix: "/ai" }).post(
         },
       });
 
-      return status(200, result.toUIMessageStreamResponse());
+      return status(
+        200,
+        result.toUIMessageStreamResponse({ sendReasoning: true }),
+      );
     } catch (error) {
       if (APICallError.isInstance(error)) {
         if (error.statusCode === 429) {
