@@ -31,8 +31,8 @@ export default async function ConversationPage({
   })
 
   return (
-    <main className="flex flex-1 flex-col gap-4 p-0 md:p-0">
-      <div className="grid flex-1 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
+    <main className="flex h-full flex-col gap-4 p-0 md:p-0">
+      <div className="grid h-full lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
         <DocumentViewerPanel />
         <ConversationPanel messages={data ?? []} />
       </div>
