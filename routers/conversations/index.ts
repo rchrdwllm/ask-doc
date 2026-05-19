@@ -1,7 +1,11 @@
-import { conversationSelectSchema } from "@/db/schema";
 import {
-  deleteConversationById,
+  conversationSelectSchema,
+  conversationUpdateSchema,
+} from "@/db/schema";
+import {
+  deleteConversation,
   getConversationById,
+  updateConversation,
 } from "@/functions/conversations";
 import { auth } from "@/lib/auth";
 import { Elysia } from "elysia";
@@ -52,6 +56,58 @@ export const conversationsRouter = new Elysia({
       }),
     },
   )
+  .patch(
+    "/:id",
+    async ({ params, status, body }) => {
+      const { id } = params;
+
+      const session = await auth.api.getSession({
+        headers: await headers(),
+      });
+
+      if (!session) {
+        return status(401, {
+          message: "Unauthorized",
+        });
+      }
+
+      const [conversation] = await getConversationById(id, session.user.id);
+
+      if (!conversation) {
+        return status(404, {
+          message: "Conversation not found",
+        });
+      }
+
+      const [result] = await updateConversation(id, body);
+
+      if (!result) {
+        return status(404, {
+          message: "Conversation not found",
+        });
+      }
+
+      return status(200, result);
+    },
+    {
+      body: conversationUpdateSchema,
+      params: z.object({
+        id: z.string(),
+      }),
+      response: {
+        200: conversationSelectSchema,
+        400: z.object({
+          message: z.string(),
+        }),
+        401: z.object({
+          message: z.string(),
+        }),
+        404: z.object({
+          message: z.string(),
+        }),
+      },
+    },
+  )
   .delete(
     "/:id",
     async ({ params, status }) => {
@@ -67,7 +123,7 @@ export const conversationsRouter = new Elysia({
         });
       }
 
-      const [result] = await deleteConversationById(id, session.user.id);
+      const [result] = await deleteConversation(id, session.user.id);
 
       if (!result) {
         return status(404, {
