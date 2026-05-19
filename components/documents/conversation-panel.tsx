@@ -5,6 +5,12 @@ import {
   MessageContent
 } from "@/components/ai-elements/message"
 import {
+  Source,
+  Sources,
+  SourcesContent,
+  SourcesTrigger
+} from "@/components/ai-elements/sources"
+import {
   Reasoning,
   ReasoningContent,
   ReasoningTrigger
@@ -25,6 +31,7 @@ import { useParams } from "next/navigation"
 import 'flowtoken/dist/styles.css'
 import { AnimatedMarkdown } from 'flowtoken'
 import { Shimmer } from "@/components/ai-elements/shimmer"
+import { useEffect } from "react"
 
 type ConversationPanelProps = {
   messages: MessageRow[]
@@ -50,6 +57,10 @@ export default function ConversationPanel({
     sendMessage({ text: message.text, metadata: { documentId, conversationId } });
   }
 
+  useEffect(() => {
+    console.log({ newMessages })
+  }, [newMessages])
+
   return (
     <section className="flex h-full overflow-y-auto flex-col border-l border-border">
       <div className="flex flex-col gap-1 border-b border-border p-4">
@@ -57,41 +68,75 @@ export default function ConversationPanel({
       </div>
       {newMessages.length ? (
         <div className="flex h-auto overflow-y-auto flex-col gap-4 p-4">
-          {newMessages.map((message) => (
-            <Message from={message.role} key={message.id}>
-              <MessageContent>
-                {message.parts.map((part, index) => {
-                  if (part.type === "text") {
-                    return (
-                      <div key={`${message.id}-${index}`}>
-                        <AnimatedMarkdown
-                          content={part.text}
-                          animation="dropIn"
-                          animationDuration="0.5s"
-                          animationTimingFunction="ease-in-out"
-                        />
-                      </div>
-                    )
-                  }
+          {newMessages.map((message) => {
+            const sourceParts = message.parts.filter(
+              (part) =>
+                part.type === "source-url" || part.type === "source-document"
+            )
 
-                  if (part.type === "reasoning") {
-                    return (
-                      <Reasoning
-                        key={`${message.id}-${index}`}
-                        isStreaming={part.state === "streaming"}
-                        className="mt-2"
-                      >
-                        <ReasoningTrigger />
-                        <ReasoningContent>{part.text}</ReasoningContent>
-                      </Reasoning>
-                    )
-                  }
+            return (
+              <Message from={message.role} key={message.id}>
+                <MessageContent>
+                  {message.parts.map((part, index) => {
+                    if (part.type === "text") {
+                      return (
+                        <div key={`${message.id}-${index}`}>
+                          <AnimatedMarkdown
+                            content={part.text}
+                            animation="dropIn"
+                            animationDuration="0.5s"
+                            animationTimingFunction="ease-in-out"
+                          />
+                        </div>
+                      )
+                    }
 
-                  return null
-                })}
-              </MessageContent>
-            </Message>
-          ))}
+                    if (part.type === "reasoning") {
+                      return (
+                        <Reasoning
+                          key={`${message.id}-${index}`}
+                          isStreaming={part.state === "streaming"}
+                          className="mt-2"
+                        >
+                          <ReasoningTrigger />
+                          <ReasoningContent>{part.text}</ReasoningContent>
+                        </Reasoning>
+                      )
+                    }
+
+                    return null
+                  })}
+
+                  {sourceParts.length > 0 && status !== 'streaming' && (
+                    <Sources className="mt-2">
+                      <SourcesTrigger count={sourceParts.length} />
+                      <SourcesContent>
+                        {sourceParts.map((part) => {
+                          if (part.type === "source-url") {
+                            return (
+                              <Source
+                                key={part.sourceId}
+                                href={part.url}
+                                title={part.title ?? part.url}
+                              />
+                            )
+                          }
+
+                          return (
+                            <Source
+                              key={part.sourceId}
+                              href={`/documents/${documentId}?view=true`}
+                              title={part.title}
+                            />
+                          )
+                        })}
+                      </SourcesContent>
+                    </Sources>
+                  )}
+                </MessageContent>
+              </Message>
+            )
+          })}
           {(status === "submitted" || status === "streaming") && (
             <Message from="assistant" key="loading">
               <MessageContent>
