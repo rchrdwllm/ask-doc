@@ -1,4 +1,8 @@
-import { conversation, conversationInsertSchema } from "@/db/schema";
+import {
+  conversation,
+  conversationInsertSchema,
+  conversationUpdateSchema,
+} from "@/db/schema";
 import { and, eq } from "drizzle-orm";
 import { db } from "@/db";
 import * as z from "zod";
@@ -37,10 +41,23 @@ export const createConversationForDocument = async (
   return result;
 };
 
-export const deleteConversationById = async (id: string, userId: string) => {
+export const deleteConversation = async (id: string, userId: string) => {
   const result = await db
     .delete(conversation)
     .where(and(eq(conversation.id, id), eq(conversation.userId, userId)))
+    .returning();
+
+  return result;
+};
+
+export const updateConversation = async (
+  id: string,
+  updates: z.infer<typeof conversationUpdateSchema>,
+) => {
+  const result = await db
+    .update(conversation)
+    .set(updates)
+    .where(and(eq(conversation.id, id)))
     .returning();
 
   return result;

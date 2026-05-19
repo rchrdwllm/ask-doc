@@ -257,6 +257,7 @@ export const documentSelectSchema = createSelectSchema(document);
 export const documentUpdateSchema = createUpdateSchema(document);
 export const conversationInsertSchema = createInsertSchema(conversation);
 export const conversationSelectSchema = createSelectSchema(conversation);
+export const conversationUpdateSchema = createUpdateSchema(conversation);
 export const messageInsertSchema = createInsertSchema(message);
 export const messageSelectSchema = createSelectSchema(message);
 export const documentChunkInsertSchema = createInsertSchema(documentChunk);
