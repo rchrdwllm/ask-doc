@@ -14,14 +14,18 @@ import {
 	DropdownMenuSeparator,
 	DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { Switch } from "@/components/ui/switch";
 import { authClient } from "@/lib/auth-client";
-import { UserIcon, SettingsIcon, LogOutIcon } from "lucide-react";
+import { useTheme } from "next-themes";
+import { UserIcon, SettingsIcon, LogOutIcon, SunIcon, MoonIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { Skeleton } from "../ui/skeleton";
 
 export function NavUser() {
 	const { data, isPending } = authClient.useSession();
 	const router = useRouter();
+	const { theme, setTheme } = useTheme();
+	const isDark = theme === "dark";
 
 	if (isPending) {
 		return <Skeleton className="size-8 rounded-full" />
@@ -38,6 +42,11 @@ export function NavUser() {
 		await authClient.signOut();
 
 		router.refresh();
+	}
+
+	const handleThemeChange = (e: MouseEvent) => {
+		e.preventDefault();
+		setTheme(isDark ? "light" : "dark")
 	}
 
 	return (
@@ -75,6 +84,13 @@ export function NavUser() {
 					<DropdownMenuItem>
 						<SettingsIcon />
 						Settings
+					</DropdownMenuItem>
+					<DropdownMenuItem className="flex items-center justify-between gap-4" onClick={handleThemeChange}>
+						<div className="flex items-center gap-2">
+							{isDark ? <MoonIcon /> : <SunIcon />}
+							<span>{isDark ? "Dark" : "Light"}</span>
+						</div>
+						<Switch checked={isDark} />
 					</DropdownMenuItem>
 				</DropdownMenuGroup>
 				<DropdownMenuSeparator />

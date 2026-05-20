@@ -146,7 +146,7 @@ export function AppSidebar() {
 					<SidebarGroup>
 						<SidebarMenuItem className="flex items-center gap-2">
 							<SidebarMenuButton
-								className="min-w-8 bg-card text-foreground shadow-xs border border-input transition-colors"
+								className="min-w-8 bg-primary hover:bg-primary/90 transition-colors text-white hover:text-white active:bg-primary/80 active:text-white"
 								tooltip="Upload Document"
 								onClick={() => setIsOpen(true)}
 							>
