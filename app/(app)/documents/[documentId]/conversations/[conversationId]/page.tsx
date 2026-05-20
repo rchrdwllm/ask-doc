@@ -10,7 +10,7 @@ type ConversationPageProps = {
 }
 
 const DocumentViewerPanel = dynamic(
-  () => import("@/components/documents/document-viewer-panel")
+  () => import("@/components/documents/document-viewer/document-viewer-panel")
 )
 const ConversationPanel = dynamic(
   () => import("@/components/documents/conversation-panel")
@@ -19,7 +19,7 @@ const ConversationPanel = dynamic(
 export default async function ConversationPage({
   params,
 }: ConversationPageProps) {
-  const { conversationId } = await params
+  const { conversationId, documentId } = await params
   const incoming = await headers()
   const cookieHeader = incoming.get("cookie") ?? ""
 
@@ -50,7 +50,7 @@ export default async function ConversationPage({
   return (
     <main className="flex h-full flex-col gap-4 p-0 md:p-0">
       <div className="grid h-full lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
-        <DocumentViewerPanel />
+        <DocumentViewerPanel documentId={documentId} />
         <ConversationPanel
           conversationTitle={conversation.title ?? "Untitled Conversation"}
           messages={messages}
