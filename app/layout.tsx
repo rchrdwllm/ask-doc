@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono, Lora } from "next/font/google";
 import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { ThemeProvider } from "@/components/providers/theme-provider";
 import "./globals.css";
 import { cn } from "@/lib/utils";
 import TopLoaderWrapper from "@/components/wrappers/toploader-wrapper";
@@ -37,11 +38,13 @@ export default function RootLayout({
     >
       <body suppressHydrationWarning className="min-h-full flex flex-col">
         <TooltipProvider>
-          <ReactQueryProvider>
-            <TopLoaderWrapper>
-              {children}
-            </TopLoaderWrapper>
-          </ReactQueryProvider>
+          <ThemeProvider attribute="class">
+            <ReactQueryProvider>
+              <TopLoaderWrapper>
+                {children}
+              </TopLoaderWrapper>
+            </ReactQueryProvider>
+          </ThemeProvider>
           <Toaster />
         </TooltipProvider>
       </body>
