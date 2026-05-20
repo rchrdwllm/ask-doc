@@ -37,7 +37,11 @@ Always use `bun` for package management and scripts.
 /
 ├── app/                          # Next.js App Router pages
 │   ├── (app)/                    # Protected routes group
-│   │   ├── documents/            # Documents page
+│   │   ├── documents/            # Documents list page
+│   │   │   └── page.tsx
+│   │   ├── documents/[documentId]/ # Document detail page
+│   │   │   └── page.tsx
+│   │   ├── documents/[documentId]/conversations/[conversationId]/ # Chat page
 │   │   │   └── page.tsx
 │   │   └── layout.tsx            # App layout
 │   ├── (auth)/                  # Auth routes group
@@ -51,12 +55,16 @@ Always use `bun` for package management and scripts.
 │   │   │   └── route.ts
 │   │   └── auth/
 │   │       └── [...all]/route.ts # Better Auth routes
+│   ├── health/                  # Health check page
+│   │   └── page.tsx
 │   ├── page.tsx                  # Landing page (public)
 │   ├── layout.tsx               # Root layout
 │   └── globals.css              # Global styles
 ├── components/
 │   ├── ui/                      # shadcn/ui components
-│   └── documents/               # Document-related components
+│   ├── documents/               # Document-related components
+│   └── wrappers/                # Component wrappers
+│       └── toploader-wrapper.tsx
 ├── constants/                   # App constants
 │   └── index.ts
 ├── db/                          # Database layer
@@ -67,38 +75,61 @@ Always use `bun` for package management and scripts.
 │   ├── conversations.ts
 │   ├── messages.ts
 │   └── document-chunks.ts
+├── hooks/                      # Custom React hooks
+│   ├── use-mobile.ts
+│   └── use-app-breadcrumbs.ts
 ├── lib/                         # Utilities and helpers
 │   ├── auth.ts                 # Server-side auth (Better Auth)
 │   ├── auth-client.ts          # Client-side auth client
 │   ├── api.ts                  # Eden treaty client
-│   ├── documents.ts            # Document processing functions (text extraction, chunking, embedding)
-│   ├── document-chunks.ts      # Document chunking and embedding functions
+│   ├── documents.ts            # Document processing functions (text extraction, chunking)
+│   ├── document-chunks.ts      # Document chunking functions
+│   ├── embeddings.ts           # Embedding generation utilities
 │   ├── elysia.ts              # Elysia app definition
 │   ├── supabase.ts             # Supabase client factory
+│   ├── prompt.ts               # Prompt loading utilities
+│   ├── retrieval.ts            # RAG retrieval functions
 │   ├── schemas/                # Zod validation schemas
 │   │   └── auth.ts
 │   └── utils.ts                # Utility functions (cn, etc.)
+├── prompts/                     # AI prompt templates
+│   └── chat.md
 ├── routers/                     # Elysia route definitions
 │   ├── health.ts
 │   ├── embeddings.ts
+│   ├── ai.ts                    # AI chat endpoint
+│   ├── conversations/           # Global conversations routes
+│   │   ├── index.ts
+│   │   └── messages.ts
 │   └── documents/
 │       ├── index.ts
 │       ├── conversations.ts
 │       ├── messages.ts
-│       └── document-chunks.ts
-├── hooks/                      # Custom React hooks
-│   └── use-mobile.ts
+│       ├── document-chunks.ts
+│       └── retrieval.ts        # Document retrieval/rag endpoint
 ├── drizzle/                    # Drizzle config & migrations
 │   ├── meta/
 │   └── config.ts
 ├── tests/                      # Test files
-│   └── api/
-│       └── eden.test.ts
-├── docs/planning/              # Project documentation
+│   ├── api/
+│   │   └── eden.test.ts
+│   ├── authentication/
+│   │   ├── auth.test.ts
+│   │   └── schemas.test.ts
+│   ├── setup.ts
+│   └── server.ts
+├── docs/                       # Project documentation
+│   ├── planning/
+│   ├── reference/
+│   │   └── authentication.md
+│   └── tutorial/
+│       └── auth-testing-tutorial.md
 ├── package.json
 ├── next.config.ts
 ├── tsconfig.json
-└── tailwind.config.ts         # See postcss.config.mjs for v4 config
+├── postcss.config.mjs          # Tailwind CSS v4 config
+├── vitest.config.ts            # Test configuration
+└── proxy.ts                   # Development proxy
 ```
 
 ## Development Workflow
@@ -205,6 +236,13 @@ if (error) {
 ### API Routes (Elysia)
 
 - `GET /api/health` - Health check
+- `POST /api/ai/chat` - AI chat with streaming (global)
+- `GET /api/conversations` - List user's global conversations
+- `GET /api/conversations/:id` - Get single conversation
+- `PATCH /api/conversations/:id` - Update conversation
+- `DELETE /api/conversations/:id` - Delete conversation
+- `GET /api/conversations/:id/messages` - Get conversation messages
+- `POST /api/conversations/:id/messages` - Create message in conversation
 - `GET /api/documents` - List user's documents
 - `POST /api/documents` - Upload new document
 - `GET /api/documents/:id` - Get single document
@@ -213,6 +251,7 @@ if (error) {
 - `GET /api/documents/:id/conversations` - Get document conversation
 - `POST /api/documents/:id/messages` - Create chat message
 - `POST /api/documents/:id/chunks` - Save document chunks
+- `POST /api/documents/:id/retrieval` - RAG retrieval for document
 - `POST /api/embeddings` - Generate embeddings for chunks
 
 ### RAG Pipeline (Implemented)
