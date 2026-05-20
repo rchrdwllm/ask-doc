@@ -54,8 +54,7 @@ import { Button } from "@/components/ui/button"
 import { MessageRow } from "@/db/schema"
 import { useChat } from '@ai-sdk/react'
 import { DefaultChatTransport } from "ai"
-import { useParams } from "next/navigation"
-import { useRouter } from "@bprogress/next/app"
+import { useParams, useRouter } from "next/navigation"
 import { Loader2, MoreHorizontal, Pencil, Trash2 } from "lucide-react"
 import 'flowtoken/dist/styles.css'
 import { AnimatedMarkdown } from 'flowtoken'
@@ -63,6 +62,7 @@ import { Shimmer } from "@/components/ai-elements/shimmer"
 import { useEffect, useRef, useState } from "react"
 import { client } from "@/lib/api"
 import { toast } from "sonner"
+import { Skeleton } from "../ui/skeleton"
 
 type ConversationPanelProps = {
   conversationTitle: string;
@@ -91,7 +91,36 @@ export default function ConversationPanel({
   });
   const [isLoading, setIsLoading] = useState(false)
 
-  const handleSubmit = (message: PromptInputMessage) => {
+  const handleSubmit = async (message: PromptInputMessage) => {
+    if (newMessages.length == 0) {
+      setIsLoading(true);
+
+      client.ai.title.post({ text: message.text }).then(({ data, error }) => {
+        if (error) {
+          toast.error(error.value.message);
+          setIsLoading(false);
+          return;
+        }
+
+        if (data) {
+          client.conversations({ id: conversationId as string }).patch({
+            title: data.generatedTitle,
+          }).then(({ data, error }) => {
+            if (error) {
+              toast.error(error.value.message);
+              setIsLoading(false);
+              return;
+            }
+
+            if (data) {
+              router.refresh();
+              setIsLoading(false);
+            }
+          });
+        }
+      })
+    }
+
     sendMessage({ text: message.text, metadata: { documentId, conversationId } });
   }
 
@@ -160,9 +189,13 @@ export default function ConversationPanel({
     <section className="flex h-full overflow-y-auto flex-col border-l border-border">
       {/* Header */}
       <div className="flex items-center gap-2 border-b border-border p-4">
-        <h2 className="flex-1 truncate font-heading text-xl font-semibold">
-          {conversationTitle}
-        </h2>
+        {isLoading ? (
+          <Skeleton className="h-6 w-full" />
+        ) : (
+          <h2 className="flex-1 truncate font-heading text-xl font-semibold">
+            {conversationTitle}
+          </h2>
+        )}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" size="icon" className="size-8">

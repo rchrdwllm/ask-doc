@@ -85,7 +85,7 @@ export function NavUser() {
 						<SettingsIcon />
 						Settings
 					</DropdownMenuItem>
-					<DropdownMenuItem className="flex items-center justify-between gap-4" onClick={handleThemeChange}>
+					<DropdownMenuItem className="flex items-center justify-between gap-4" onClick={handleThemeChange as any}>
 						<div className="flex items-center gap-2">
 							{isDark ? <MoonIcon /> : <SunIcon />}
 							<span>{isDark ? "Dark" : "Light"}</span>
