@@ -337,12 +337,9 @@ export default function ConversationPanel({
                 <Suggestion
                   key={suggestion}
                   suggestion={suggestion}
-                  onClick={(value) =>
-                    sendMessage({
-                      text: value,
-                      metadata: { documentId, conversationId },
-                    })
-                  }
+                  onClick={(value) => {
+                    handleSubmit({ text: value, files: [] })
+                  }}
                 />
               ))}
             </Suggestions>

@@ -167,8 +167,6 @@ export const aiRouter = new Elysia({ prefix: "/ai" })
 
       const generatedTitle = result.text.trim();
 
-      console.log({ generatedTitle });
-
       return status(200, { generatedTitle });
     },
     {
@@ -198,23 +196,13 @@ export const aiRouter = new Elysia({ prefix: "/ai" })
         prompt:
           (await loadPrompt("suggestions")) +
           `\n\nContext:\n${chunkContents.join("\n\n")}`,
+        output: Output.object({
+          schema: z.object({
+            suggestions: z.array(z.string()),
+          }),
+        }),
       });
-      const rawText = result.text ?? "";
-      const parsedSuggestions = rawText
-        .split(/\r?\n+/)
-        .map((line) =>
-          line
-            .trim()
-            .replace(/^\d+[\.)]\s+/, "")
-            .replace(/^[-*]\s+/, ""),
-        )
-        .filter(Boolean);
-      const suggestions = parsedSuggestions.length
-        ? parsedSuggestions
-        : rawText
-            .split(/\d+[\.)]\s+/)
-            .map((line) => line.trim())
-            .filter(Boolean);
+      const suggestions = result.output.suggestions;
 
       if (!suggestions.length) {
         return status(500, {
