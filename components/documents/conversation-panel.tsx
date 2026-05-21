@@ -75,6 +75,7 @@ type ConversationPanelProps = {
 
 export default function ConversationPanel({
   conversationTitle,
+  messages: initialMessages,
 }: ConversationPanelProps) {
   const params = useParams();
   const documentId = params.documentId
@@ -92,6 +93,7 @@ export default function ConversationPanel({
         conversationId
       }
     }),
+    messages: initialMessages,
   });
   const [isLoading, setIsLoading] = useState(false)
   const [suggestions, setSuggestions] = useState<string[]>([])
