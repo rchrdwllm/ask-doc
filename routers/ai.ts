@@ -17,12 +17,13 @@ import { client } from "@/lib/api";
 import { retrieveInformation } from "@/lib/retrieval";
 import { loadPrompt } from "@/lib/prompt";
 import { getDenseDocumentChunksByDocumentId } from "@/functions/document-chunks";
+import { createMessage } from "@/functions/messages";
 
 export const aiRouter = new Elysia({ prefix: "/ai" })
   .post(
     "/chat",
     async ({ body, status }) => {
-      const { messages, documentId } = body;
+      const { messages, documentId, conversationId } = body;
       const incoming = await headers();
       const cookieHeader = incoming.get("cookie") ?? "";
 
@@ -30,6 +31,29 @@ export const aiRouter = new Elysia({ prefix: "/ai" })
         const systemPrompt = await loadPrompt("chat");
         const stream = createUIMessageStream({
           execute: async ({ writer }) => {
+            const lastUserMessage = messages.findLast(
+              (msg) => msg.role === "user",
+            );
+
+            if (lastUserMessage) {
+              const [result] = await createMessage({
+                ...lastUserMessage,
+                metadata: lastUserMessage.metadata as any,
+                conversationId,
+              });
+
+              if (!result) {
+                console.error("Failed to save user message to database.");
+              }
+            }
+
+            const savedSources: {
+              type: "source-url";
+              sourceId: string;
+              title: string;
+              url: string;
+            }[] = [];
+
             const result = streamText({
               model: "openai/gpt-oss-120b",
               messages: await convertToModelMessages(messages),
@@ -83,12 +107,15 @@ export const aiRouter = new Elysia({ prefix: "/ai" })
                     }));
 
                     mappedResult.forEach((item) => {
-                      writer.write({
-                        type: "source-url",
+                      const source = {
+                        type: "source-url" as const,
                         sourceId: item.id,
                         title: item.title,
                         url: item.url,
-                      });
+                      };
+
+                      savedSources.push(source);
+                      writer.write(source);
                     });
 
                     const formattedResult = `Here are relevant sources:\n${mappedResult
@@ -103,8 +130,31 @@ export const aiRouter = new Elysia({ prefix: "/ai" })
 
             writer.merge(
               result.toUIMessageStream({
+                generateMessageId: () => crypto.randomUUID(),
                 sendReasoning: true,
                 sendSources: true,
+                onFinish: async ({ responseMessage }) => {
+                  const messageParts = [
+                    ...responseMessage.parts,
+                    ...savedSources,
+                  ];
+
+                  console.log({ messageParts, responseMessage });
+
+                  const [result] = await createMessage({
+                    id: responseMessage.id,
+                    role: responseMessage.role,
+                    parts: messageParts,
+                    metadata: responseMessage.metadata as any,
+                    conversationId,
+                  });
+
+                  console.log({ result });
+
+                  if (!result) {
+                    console.error("Failed to save assistant message.");
+                  }
+                },
               }),
             );
           },

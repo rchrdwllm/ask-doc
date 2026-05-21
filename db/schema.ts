@@ -8,6 +8,7 @@ import {
   vector,
   pgEnum,
   integer,
+  jsonb,
 } from "drizzle-orm/pg-core";
 import {
   createInsertSchema,
@@ -15,6 +16,7 @@ import {
   createUpdateSchema,
 } from "drizzle-zod";
 import { InferSelectModel, InferInsertModel } from "drizzle-orm";
+import { UIDataTypes, UIMessagePart, UITools } from "ai";
 
 // Enums
 export const messageRoleEnum = pgEnum("message_role", [
@@ -182,8 +184,11 @@ export const message = pgTable(
   {
     id: text("id").primaryKey(),
     role: messageRoleEnum().notNull().default("user"),
-    content: text("content").notNull(),
-    sourceChunkIds: text("source_chunk_ids").array(),
+    parts: jsonb("parts")
+      .$type<UIMessagePart<UIDataTypes, UITools>[]>()
+      .notNull()
+      .default([]),
+    metadata: jsonb("metadata").$type<unknown>().default({}),
     createdAt: timestamp("created_at").notNull().defaultNow(),
     updatedAt: timestamp("updated_at")
       .defaultNow()
