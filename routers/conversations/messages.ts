@@ -44,7 +44,7 @@ export const messagesRouter = new Elysia({
         });
       }
 
-      return status(200, result);
+      return status(200, result as z.infer<typeof messageSelectSchema>[]);
     },
     {
       params: z.object({
@@ -136,7 +136,7 @@ export const messagesRouter = new Elysia({
         });
       }
 
-      return status(200, result || null);
+      return status(200, result as z.infer<typeof messageSelectSchema> | null);
     },
     {
       params: z.object({

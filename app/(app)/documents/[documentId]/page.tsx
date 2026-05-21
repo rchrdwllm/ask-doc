@@ -15,65 +15,7 @@ import {
 } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
-import { formatDate } from "@/lib/documents"
-
-const MINUTE_SECONDS = 60
-const HOUR_SECONDS = 60 * MINUTE_SECONDS
-const DAY_SECONDS = 24 * HOUR_SECONDS
-const WEEK_SECONDS = 7 * DAY_SECONDS
-const MONTH_SECONDS = 30 * DAY_SECONDS
-const YEAR_SECONDS = 365 * DAY_SECONDS
-
-const sanitizePlainText = (value: string) => {
-  return value
-    .replace(/```[\s\S]*?```/g, " ")
-    .replace(/`([^`]+)`/g, "$1")
-    .replace(/!\[[^\]]*\]\([^\)]*\)/g, " ")
-    .replace(/\[([^\]]+)\]\([^\)]*\)/g, "$1")
-    .replace(/<[^>]+>/g, " ")
-    .replace(/(^|\n)\s*#+\s+/g, "$1")
-    .replace(/(^|\n)\s*>\s+/g, "$1")
-    .replace(/(^|\n)\s*[-*+]\s+/g, "$1")
-    .replace(/(^|\n)\s*\d+\.\s+/g, "$1")
-    .replace(/[\*_~]/g, "")
-    .replace(/\s+/g, " ")
-    .trim()
-}
-
-const formatRelativeTime = (date: Date, now: Date) => {
-  const diffSeconds = Math.round((now.getTime() - date.getTime()) / 1000)
-
-  if (diffSeconds <= 0) return "just now"
-  if (diffSeconds < MINUTE_SECONDS) return "just now"
-
-  if (diffSeconds < HOUR_SECONDS) {
-    const minutes = Math.round(diffSeconds / MINUTE_SECONDS)
-    return `${minutes} min${minutes === 1 ? "" : "s"} ago`
-  }
-
-  if (diffSeconds < DAY_SECONDS) {
-    const hours = Math.round(diffSeconds / HOUR_SECONDS)
-    return `${hours} hr${hours === 1 ? "" : "s"} ago`
-  }
-
-  if (diffSeconds < WEEK_SECONDS) {
-    const days = Math.round(diffSeconds / DAY_SECONDS)
-    return `${days} day${days === 1 ? "" : "s"} ago`
-  }
-
-  if (diffSeconds < MONTH_SECONDS) {
-    const weeks = Math.round(diffSeconds / WEEK_SECONDS)
-    return `${weeks} wk${weeks === 1 ? "" : "s"} ago`
-  }
-
-  if (diffSeconds < YEAR_SECONDS) {
-    const months = Math.round(diffSeconds / MONTH_SECONDS)
-    return `${months} mo${months === 1 ? "" : "s"} ago`
-  }
-
-  const years = Math.round(diffSeconds / YEAR_SECONDS)
-  return `${years} yr${years === 1 ? "" : "s"} ago`
-}
+import { formatDate, extractTextFromParts, sanitizePlainText, formatRelativeTime } from "@/lib/documents"
 
 type DocumentPageProps = {
   params: Promise<{ documentId: string }>
@@ -217,8 +159,8 @@ export default async function DocumentPage({
           {conversationPreviews.length ? (
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {conversationPreviews.map(({ conversation, lastMessage }) => {
-                const previewText = lastMessage?.content
-                  ? sanitizePlainText(lastMessage.content)
+                const previewText = lastMessage?.parts?.length
+                  ? sanitizePlainText(extractTextFromParts(lastMessage.parts))
                   : "No messages yet"
                 const previewTime = lastMessage?.createdAt
                   ? formatRelativeTime(new Date(lastMessage.createdAt), now)
