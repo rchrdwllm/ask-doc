@@ -25,7 +25,7 @@ export default async function DocumentViewerPanel({ documentId }: DocumentViewer
 
   return (
     <section className="flex min-h-0 flex-col gap-4">
-      <PDFViewer documentUrl={document.url} />
+      <PDFViewer />
     </section>
   )
 }

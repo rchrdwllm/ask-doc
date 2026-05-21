@@ -76,7 +76,7 @@ export function UploadDialog({ open, onOpenChange }: UploadDialogProps) {
 
       onOpenChange(false);
 
-      const { data: chunks, error: chunkError } = await chunkDocument(file);
+      const { data: chunkData, error: chunkError } = await chunkDocument(file);
 
       if (chunkError) {
         setError(chunkError);
@@ -88,7 +88,7 @@ export function UploadDialog({ open, onOpenChange }: UploadDialogProps) {
         router.refresh();
 
         return;
-      } else if (!chunks || chunks.length === 0) {
+      } else if (!chunkData) {
         setError("Failed to chunk document. Please make sure the file has valid text content.");
         setFile(null)
 
@@ -100,7 +100,9 @@ export function UploadDialog({ open, onOpenChange }: UploadDialogProps) {
         return;
       }
 
-      const { data: chunksWithEmbeddings, error: embeddingError } = await client.embeddings.chunks.post({ chunks });
+      await client.documents({ id: data.id }).patch({ pageCount: chunkData.pages });
+
+      const { data: chunksWithEmbeddings, error: embeddingError } = await client.embeddings.chunks.post({ chunks: chunkData.chunks });
 
       if (embeddingError || !chunksWithEmbeddings) {
         setError(embeddingError.value.message || "Failed to create embeddings for chunks");

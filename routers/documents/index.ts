@@ -104,14 +104,9 @@ export const documentsRouter = new Elysia({ prefix: "/documents" })
         });
       }
 
-      const { data: urlData } = supabase.storage
-        .from("documents")
-        .getPublicUrl(data.path);
-
       const result = await createDocument(
         session.user.id,
         fileName.replace(/\.pdf$/i, ""),
-        urlData.publicUrl,
         data.path,
       );
 
