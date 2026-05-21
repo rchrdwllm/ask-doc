@@ -139,8 +139,6 @@ export const aiRouter = new Elysia({ prefix: "/ai" })
                     ...savedSources,
                   ];
 
-                  console.log({ messageParts, responseMessage });
-
                   const [result] = await createMessage({
                     id: responseMessage.id,
                     role: responseMessage.role,
@@ -148,8 +146,6 @@ export const aiRouter = new Elysia({ prefix: "/ai" })
                     metadata: responseMessage.metadata as any,
                     conversationId,
                   });
-
-                  console.log({ result });
 
                   if (!result) {
                     console.error("Failed to save assistant message.");
