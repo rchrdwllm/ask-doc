@@ -4,6 +4,7 @@ import { headers } from "next/headers"
 import { client } from "@/lib/api"
 import { Button } from "@/components/ui/button"
 import { DocumentConversationsEmptyClient } from "@/components/documents/document-conversations-empty-client"
+import { NewConversationButton } from "@/components/documents/new-conversation-button"
 import {
   Card,
   CardContent,
@@ -181,6 +182,7 @@ export default async function DocumentPage({
                   </Link>
                 </Button>
               )}
+              <NewConversationButton documentId={data.id} />
             </div>
           </div>
         </div>
