@@ -208,14 +208,6 @@ export default async function DocumentPage({
                 <p className="text-sm text-muted-foreground">
                   This stub will be replaced with the PDF renderer.
                 </p>
-                <Link
-                  href={data.url}
-                  className="text-sm text-primary underline-offset-4 hover:underline"
-                  target="_blank"
-                  rel="noreferrer"
-                >
-                  Open source file
-                </Link>
               </div>
             </div>
           </CardContent>

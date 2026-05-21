@@ -108,7 +108,6 @@ export const document = pgTable(
     id: text("id").primaryKey(),
     title: text("title").notNull(),
     status: documentStatusEnum().default("processing"),
-    url: text("url").notNull(),
     storage_path: text("storage_path").notNull(),
     pageCount: integer("page_count"),
     errorMessage: text("error_message"),

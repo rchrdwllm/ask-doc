@@ -14,6 +14,7 @@ export const chunkDocument = async (file: File) => {
       },
     });
     const docs = await loader.load();
+    const pages = docs.length;
 
     const splitter = new RecursiveCharacterTextSplitter({
       chunkSize: 500,
@@ -22,7 +23,13 @@ export const chunkDocument = async (file: File) => {
 
     const chunks = await splitter.splitDocuments(docs);
 
-    return { data: chunks, error: null };
+    return {
+      data: {
+        chunks,
+        pages,
+      },
+      error: null,
+    };
   } catch (error) {
     return {
       data: null,

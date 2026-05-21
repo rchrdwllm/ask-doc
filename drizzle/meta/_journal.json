@@ -43,6 +43,13 @@
       "when": 1778506791446,
       "tag": "0005_yellow_namor",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1779349913401,
+      "tag": "0006_shallow_beast",
+      "breakpoints": true
     }
   ]
 }
