@@ -59,6 +59,10 @@ import { Loader2, MoreHorizontal, Pencil, Trash2 } from "lucide-react"
 import 'flowtoken/dist/styles.css'
 import { AnimatedMarkdown } from 'flowtoken'
 import { Shimmer } from "@/components/ai-elements/shimmer"
+import {
+  Suggestion,
+  Suggestions,
+} from "@/components/ai-elements/suggestion"
 import { useEffect, useRef, useState } from "react"
 import { client } from "@/lib/api"
 import { toast } from "sonner"
@@ -90,6 +94,7 @@ export default function ConversationPanel({
     }),
   });
   const [isLoading, setIsLoading] = useState(false)
+  const [suggestions, setSuggestions] = useState<string[]>([])
 
   const handleSubmit = async (message: PromptInputMessage) => {
     if (newMessages.length == 0) {
@@ -177,6 +182,20 @@ export default function ConversationPanel({
     }
   }
 
+  const fetchSuggestions = async () => {
+    const { data, error } = await client.ai.suggestions.post({
+      documentId: documentId as string,
+    });
+
+    if (error) {
+      return;
+    }
+
+    if (data) {
+      setSuggestions(data);
+    }
+  }
+
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
   }, [newMessages])
@@ -184,6 +203,10 @@ export default function ConversationPanel({
   useEffect(() => {
     setRenameValue(conversationTitle)
   }, [conversationTitle])
+
+  useEffect(() => {
+    fetchSuggestions();
+  }, [])
 
   return (
     <section className="flex h-full overflow-y-auto flex-col border-l border-border">
@@ -308,6 +331,22 @@ export default function ConversationPanel({
       <div className="mt-auto">
         <Separator />
         <div className="flex flex-col gap-4 p-4">
+          {!!suggestions.length && (
+            <Suggestions>
+              {suggestions.map((suggestion) => (
+                <Suggestion
+                  key={suggestion}
+                  suggestion={suggestion}
+                  onClick={(value) =>
+                    sendMessage({
+                      text: value,
+                      metadata: { documentId, conversationId },
+                    })
+                  }
+                />
+              ))}
+            </Suggestions>
+          )}
           <PromptInput onSubmit={handleSubmit}>
             <PromptInputTextarea
               placeholder="Ask a question about this document..."
