@@ -42,7 +42,15 @@ The main AI chat endpoint that handles conversation streaming.
 | ---- |-------------|
 | `routers/ai.ts` | AI chat API endpoint with tool-based retrieval |
 
-**Endpoint:** `POST /api/ai/chat`
+**Endpoints:**
+
+| Method | Path | Description |
+|--------|------|-------------|
+| POST | `/api/ai/chat` | AI chat with streaming |
+| POST | `/api/ai/title` | Generate conversation title from first message |
+| POST | `/api/ai/suggestions` | Generate query suggestions for new conversations |
+
+#### POST /api/ai/chat
 
 **Request Body:**
 
@@ -61,6 +69,42 @@ The main AI chat endpoint that handles conversation streaming.
 - Step limiting (max 5 steps per request)
 - Source citation via `source-url` messages
 - Error handling for quota (429) and upstream errors (502)
+
+#### POST /api/ai/title
+
+**Request Body:**
+
+```typescript
+{
+  text: string;  // First message text
+}
+```
+
+**Response:**
+
+```typescript
+{
+  generatedTitle: string;
+}
+```
+
+#### POST /api/ai/suggestions
+
+**Request Body:**
+
+```typescript
+{
+  documentId: string;
+}
+```
+
+**Response:** `string[]` - Array of suggested questions
+
+**Process:**
+1. Fetch top-K dense chunks by computing document centroid (avg of all chunk embeddings)
+2. Rank chunks by cosine similarity to centroid
+3. Use dense chunks as context for AI to generate query suggestions
+4. Parse AI output (numbered/bulleted list) into string array
 
 ### Embeddings Router (`routers/embeddings.ts`)
 
@@ -170,6 +214,32 @@ chunkDocument(file: File): Promise<{ data: Document[] | null; error: string | nu
 2. Split text using `RecursiveCharacterTextSplitter`
 3. Return array of `Document` objects
 
+### Dense Chunk Retrieval (`functions/document-chunks.ts`)
+
+Computes document centroid and retrieves most representative chunks.
+
+| Function | Description |
+| -------- |-------------|
+| `getDenseDocumentChunksByDocumentId` | Get top-K chunks closest to document centroid |
+
+**Process:**
+1. Compute centroid as average of all chunk embeddings for a document
+2. Calculate cosine similarity between each chunk and centroid
+3. Order by similarity descending and return top-K results
+
+**Implementation:**
+
+```typescript
+const centroid = db
+  .select({
+    embedding: sql<number[]>`avg(${documentChunk.embedding})`,
+  })
+  .from(documentChunk)
+  .where(eq(documentChunk.documentId, documentId))
+  .limit(1);
+const similarity = sql<number>`1 - (${cosineDistance(documentChunk.embedding, centroid)})`;
+```
+
 ### Database Functions (`functions/document-chunks.ts`)
 
 Database operations for vector storage and search.
@@ -179,6 +249,7 @@ Database operations for vector storage and search.
 | `createDocumentChunk` | Insert chunk with embedding into database |
 | `getSimilarDocumentChunksByDocumentId` | Search within specific document |
 | `getSimilarDocumentChunks` | Global search across all documents |
+| `getDenseDocumentChunksByDocumentId` | Get top-K chunks closest to document centroid |
 
 **Similarity Calculation:**
 
@@ -239,6 +310,13 @@ export const documentChunk = pgTable(
 
 ## RAG Pipeline Workflow
 
+### Components
+
+| Component | Description |
+|-----------|-------------|
+| `components/ai-elements/suggestion.tsx` | Suggestion and Suggestions UI components |
+| `components/documents/conversation-panel.tsx` | Chat panel with suggestion rendering |
+
 ### Document Upload and Indexing
 
 ```
@@ -297,6 +375,32 @@ User sends message
          │
          ▼
 Streaming response to client
+```
+
+### Query Suggestions Generation
+
+```
+User opens new conversation
+       │
+       ▼
+┌─────────────────┐
+│ Suggestions API │──▶ Fetch dense chunks via centroid similarity
+└────────┬────────┘
+         │
+         ▼
+┌─────────────────┐
+│ AI Router       │──▶ Generate suggestions from dense chunk context
+└────────┬────────┘
+         │
+         ▼
+┌─────────────────┐
+│ Parse Output    │──▶ Convert numbered/bulleted list to string array
+└────────┬────────┘
+         │
+         ▼
+┌─────────────────┐
+│ Suggestions UI  │──▶ Render clickable suggestion buttons
+└─────────────────┘
 ```
 
 ### Tool Definition
@@ -377,7 +481,8 @@ functions/
 └── document-chunks.ts       # Database operations
 
 prompts/
-└── chat.md                  # System prompt template
+├── chat.md                  # System prompt template
+└── suggestions.md           # Query suggestions prompt template
 
 db/
 └── schema.ts                # document_chunk table definition

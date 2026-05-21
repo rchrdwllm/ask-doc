@@ -49,3 +49,27 @@ export const getSimilarDocumentChunks = async (embedding: number[]) => {
 
   return result;
 };
+
+export const getDenseDocumentChunksByDocumentId = async (
+  documentId: string,
+  topK = 5,
+) => {
+  const documentChunkColumns = getTableColumns(documentChunk);
+  const centroid = db
+    .select({
+      embedding: sql<number[]>`avg(${documentChunk.embedding})`,
+    })
+    .from(documentChunk)
+    .where(eq(documentChunk.documentId, documentId))
+    .limit(1);
+  const similarity = sql<number>`1 - (${cosineDistance(documentChunk.embedding, centroid)})`;
+
+  const result = await db
+    .select({ similarity, ...documentChunkColumns })
+    .from(documentChunk)
+    .where(eq(documentChunk.documentId, documentId))
+    .orderBy((t) => desc(t.similarity))
+    .limit(topK);
+
+  return result;
+};
