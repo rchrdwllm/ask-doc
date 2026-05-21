@@ -8,6 +8,7 @@ import {
   createUIMessageStream,
   createUIMessageStreamResponse,
   generateText,
+  Output,
 } from "ai";
 import { Elysia } from "elysia";
 import * as z from "zod";
@@ -15,6 +16,7 @@ import { headers } from "next/headers";
 import { client } from "@/lib/api";
 import { retrieveInformation } from "@/lib/retrieval";
 import { loadPrompt } from "@/lib/prompt";
+import { getDenseDocumentChunksByDocumentId } from "@/functions/document-chunks";
 
 export const aiRouter = new Elysia({ prefix: "/ai" })
   .post(
@@ -177,6 +179,57 @@ export const aiRouter = new Elysia({ prefix: "/ai" })
         200: z.object({
           generatedTitle: z.string(),
         }),
+        500: z.object({
+          message: z.string(),
+        }),
+      },
+    },
+  )
+  .post(
+    "/suggestions",
+    async ({ body, status }) => {
+      const { documentId } = body;
+
+      const chunks = await getDenseDocumentChunksByDocumentId(documentId);
+      const chunkContents = chunks.map((chunk) => chunk.content);
+
+      const result = await generateText({
+        model: "openai/gpt-oss-120b",
+        prompt:
+          (await loadPrompt("suggestions")) +
+          `\n\nContext:\n${chunkContents.join("\n\n")}`,
+      });
+      const rawText = result.text ?? "";
+      const parsedSuggestions = rawText
+        .split(/\r?\n+/)
+        .map((line) =>
+          line
+            .trim()
+            .replace(/^\d+[\.)]\s+/, "")
+            .replace(/^[-*]\s+/, ""),
+        )
+        .filter(Boolean);
+      const suggestions = parsedSuggestions.length
+        ? parsedSuggestions
+        : rawText
+            .split(/\d+[\.)]\s+/)
+            .map((line) => line.trim())
+            .filter(Boolean);
+
+      if (!suggestions.length) {
+        return status(500, {
+          message: "Failed to generate suggestions.",
+        });
+      }
+
+      return status(200, suggestions);
+    },
+    {
+      body: z.object({
+        documentId: z.string(),
+      }),
+      response: {
+        200: z.array(z.string()),
         500: z.object({
           message: z.string(),
         }),
