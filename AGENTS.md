@@ -237,6 +237,8 @@ if (error) {
 
 - `GET /api/health` - Health check
 - `POST /api/ai/chat` - AI chat with streaming (global)
+- `POST /api/ai/title` - Generate conversation title from first message
+- `POST /api/ai/suggestions` - Generate query suggestions for new conversations
 - `GET /api/conversations` - List user's global conversations
 - `GET /api/conversations/:id` - Get single conversation
 - `PATCH /api/conversations/:id` - Update conversation
@@ -260,6 +262,14 @@ if (error) {
 2. Chunking via RecursiveCharacterTextSplitter (500 chars, 50 char overlap)
 3. Embedding generation via text-embedding-004
 4. Storage in pgvector with HNSW index
+
+### Query Suggestions (Implemented)
+
+1. Fetch top-K dense chunks by computing document centroid (avg of all chunk embeddings)
+2. Rank chunks by cosine similarity to centroid
+3. Use dense chunks as context for AI to generate query suggestions
+4. Parse AI output (numbered/bulleted list) into string array
+5. Render suggestions using `Suggestions` component from AI Elements
 
 ## Required Environment Variables
 

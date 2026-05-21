@@ -42,7 +42,15 @@ The main AI chat endpoint that handles conversation streaming.
 | ---- |-------------|
 | `routers/ai.ts` | AI chat API endpoint with tool-based retrieval |
 
-**Endpoint:** `POST /api/ai/chat`
+**Endpoints:**
+
+| Method | Path | Description |
+|--------|------|-------------|
+| POST | `/api/ai/chat` | AI chat with streaming |
+| POST | `/api/ai/title` | Generate conversation title from first message |
+| POST | `/api/ai/suggestions` | Generate query suggestions for new conversations |
+
+#### POST /api/ai/chat
 
 **Request Body:**
 
@@ -61,6 +69,42 @@ The main AI chat endpoint that handles conversation streaming.
 - Step limiting (max 5 steps per request)
 - Source citation via `source-url` messages
 - Error handling for quota (429) and upstream errors (502)
+
+#### POST /api/ai/title
+
+**Request Body:**
+
+```typescript
+{
+  text: string;  // First message text
+}
+```
+
+**Response:**
+
+```typescript
+{
+  generatedTitle: string;
+}
+```
+
+#### POST /api/ai/suggestions
+
+**Request Body:**
+
+```typescript
+{
+  documentId: string;
+}
+```
+
+**Response:** `string[]` - Array of suggested questions
+
+**Process:**
+1. Fetch top-K dense chunks by computing document centroid (avg of all chunk embeddings)
+2. Rank chunks by cosine similarity to centroid
+3. Use dense chunks as context for AI to generate query suggestions
+4. Parse AI output (numbered/bulleted list) into string array
 
 ### Embeddings Router (`routers/embeddings.ts`)
 
