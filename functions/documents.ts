@@ -15,7 +15,6 @@ export const getAllUserDocuments = async (userId: string) => {
 export const createDocument = async (
   userId: string,
   title: string,
-  url: string,
   storage_path: string,
 ) => {
   const id = crypto.randomUUID();
@@ -24,7 +23,6 @@ export const createDocument = async (
     .values({
       id,
       title,
-      url,
       storage_path,
       status: "processing",
       userId,
