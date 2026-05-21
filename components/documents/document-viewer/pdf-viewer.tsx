@@ -33,11 +33,7 @@ const plugins = [
   createPluginRegistration(SelectionPluginPackage),
 ];
 
-type PDFViewerProps = {
-  documentUrl: string;
-}
-
-export const PDFViewer = ({ documentUrl }: PDFViewerProps) => {
+export const PDFViewer = () => {
   // 2. Initialize the engine with the React hook
   const { engine, isLoading } = usePdfiumEngine();
 
