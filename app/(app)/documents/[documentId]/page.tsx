@@ -5,6 +5,7 @@ import { client } from "@/lib/api"
 import { Button } from "@/components/ui/button"
 import { DocumentConversationsEmptyClient } from "@/components/documents/document-conversations-empty-client"
 import { NewConversationButton } from "@/components/documents/new-conversation-button"
+import { ConversationCard } from "@/components/documents/conversation-card"
 import {
   Card,
   CardContent,
@@ -232,29 +233,14 @@ export default async function DocumentPage({
                   : "No messages yet"
 
                 return (
-                  <Link
+                  <ConversationCard
                     key={conversation.id}
-                    href={`/documents/${data.id}/conversations/${conversation.id}`}
-                    className="block"
-                  >
-                    <Card className="flex h-full flex-col border transition-colors hover:border-primary">
-                      <CardHeader className="space-y-2">
-                        <div className="flex items-start justify-between gap-3">
-                          <CardTitle className="min-w-0 flex-1 truncate">
-                            {conversation.title ?? "Untitled conversation"}
-                          </CardTitle>
-                          <span className="shrink-0 text-xs text-muted-foreground pt-1">
-                            {previewTime}
-                          </span>
-                        </div>
-                      </CardHeader>
-                      <CardContent>
-                        <p className="line-clamp-2 text-sm text-muted-foreground">
-                          {previewText}
-                        </p>
-                      </CardContent>
-                    </Card>
-                  </Link>
+                    documentId={data.id}
+                    conversationId={conversation.id}
+                    title={conversation.title}
+                    previewText={previewText}
+                    previewTime={previewTime}
+                  />
                 )
               })}
             </div>
