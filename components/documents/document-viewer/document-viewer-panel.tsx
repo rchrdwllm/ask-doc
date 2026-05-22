@@ -23,9 +23,12 @@ export default async function DocumentViewerPanel({ documentId }: DocumentViewer
     )
   }
 
+  const fileNameFromPath = document.storage_path.split("/").pop()
+  const fileName = fileNameFromPath || `${document.title}.pdf`
+
   return (
     <section className="flex min-h-0 flex-col gap-4 h-full">
-      <PDFViewer />
+      <PDFViewer documentId={document.id} fileName={fileName} />
     </section>
   )
 }

@@ -1,4 +1,4 @@
-import { CalendarDays, Eye, List, FileText } from "lucide-react"
+import { CalendarDays, Eye, List } from "lucide-react"
 import Link from "next/link"
 import { headers } from "next/headers"
 import { client } from "@/lib/api"
@@ -6,13 +6,7 @@ import { Button } from "@/components/ui/button"
 import { DocumentConversationsEmptyClient } from "@/components/documents/document-conversations-empty-client"
 import { NewConversationButton } from "@/components/documents/new-conversation-button"
 import { ConversationCard } from "@/components/documents/conversation-card"
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card"
+import DocumentViewerPanel from "@/components/documents/document-viewer/document-viewer-panel"
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
 import { formatDate, extractTextFromParts, sanitizePlainText, formatRelativeTime } from "@/lib/documents"
@@ -132,28 +126,9 @@ export default async function DocumentPage({
       </div>
 
       {isViewingDocument ? (
-        <Card>
-          <CardHeader>
-            <CardTitle>Document preview</CardTitle>
-            <CardDescription>
-              The full PDF viewer will appear here.
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="flex flex-col gap-4">
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <FileText />
-              PDF source
-            </div>
-            <div className="flex min-h-[320px] items-center justify-center rounded-xl border border-dashed bg-muted">
-              <div className="flex max-w-sm flex-col items-center gap-2 text-center">
-                <p className="font-medium">Document viewer coming soon</p>
-                <p className="text-sm text-muted-foreground">
-                  This stub will be replaced with the PDF renderer.
-                </p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+        <div className="min-h-[320px] rounded-xl border bg-muted/30 p-2 sm:p-4">
+          <DocumentViewerPanel documentId={data.id} />
+        </div>
       ) : (
         <div className="flex flex-col gap-4">
           {conversationPreviews.length ? (

@@ -182,6 +182,78 @@ export const documentsRouter = new Elysia({ prefix: "/documents" })
       },
     },
   )
+  .get(
+    "/:id/url",
+    async ({ params, status, set }) => {
+      const { id } = params;
+
+      const session = await auth.api.getSession({
+        headers: await headers(),
+      });
+
+      if (!session) {
+        return status(401, {
+          message: "Unauthorized",
+        });
+      }
+
+      const result = await getDocumentById(id);
+
+      if (!result) {
+        return status(404, {
+          message: "Document not found",
+        });
+      }
+
+      if (result.userId !== session.user.id) {
+        return status(401, {
+          message: "Unauthorized",
+        });
+      }
+
+      const supabase = createSupabaseClient();
+
+      const expiresInSeconds = 60 * 15;
+      const { data, error } = await supabase.storage
+        .from("documents")
+        .createSignedUrl(result.storage_path, expiresInSeconds);
+
+      if (error || !data?.signedUrl) {
+        console.error("Supabase signed URL error:", error);
+
+        return status(500, {
+          message: "Failed to create signed URL",
+        });
+      }
+
+      set.headers["Cache-Control"] = "private, max-age=900";
+
+      return status(200, {
+        url: data.signedUrl,
+        expiresAt: new Date(Date.now() + expiresInSeconds * 1000).toISOString(),
+      });
+    },
+    {
+      params: z.object({
+        id: z.string(),
+      }),
+      response: {
+        200: z.object({
+          url: z.string(),
+          expiresAt: z.string(),
+        }),
+        401: z.object({
+          message: z.string(),
+        }),
+        404: z.object({
+          message: z.string(),
+        }),
+        500: z.object({
+          message: z.string(),
+        }),
+      },
+    },
+  )
   .delete(
     "/:id",
     async ({ params, status }) => {
