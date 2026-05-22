@@ -57,7 +57,6 @@ import { DefaultChatTransport } from "ai"
 import { useParams, useRouter } from "next/navigation"
 import { Loader2, MoreHorizontal, Pencil, Trash2 } from "lucide-react"
 import 'flowtoken/dist/styles.css'
-import { AnimatedMarkdown } from 'flowtoken'
 import { Shimmer } from "@/components/ai-elements/shimmer"
 import {
   Suggestion,
@@ -67,6 +66,7 @@ import { useEffect, useRef, useState } from "react"
 import { client } from "@/lib/api"
 import { toast } from "sonner"
 import { Skeleton } from "../ui/skeleton"
+import { Streamdown } from "streamdown"
 
 type ConversationPanelProps = {
   conversationTitle: string;
@@ -258,14 +258,14 @@ export default function ConversationPanel({
                   {message.parts.map((part, index) => {
                     if (part.type === "text") {
                       return (
-                        <div key={`${message.id}-${index}`}>
-                          <AnimatedMarkdown
-                            content={part.text}
-                            animation="dropIn"
-                            animationDuration="0.5s"
-                            animationTimingFunction="ease-in-out"
-                          />
-                        </div>
+                        <Streamdown
+                          key={index}
+                          animated={{ animation: "blurIn" }}
+                          caret="block"
+                          isAnimating={status === 'streaming'}
+                        >
+                          {part.text}
+                        </Streamdown>
                       )
                     }
 
