@@ -2,6 +2,7 @@
 
 import { useDocumentManagerCapability } from '@embedpdf/plugin-document-manager/react';
 import { useEffect, useRef } from 'react';
+import { client } from '@/lib/api';
 
 type DocumentLoaderProps = {
   documentId: string;
@@ -28,27 +29,45 @@ export const DocumentLoader = ({
 
     loadedDocumentIdRef.current = documentId;
 
+    const fetchSignedUrl = async () => {
+      const { data, error } = await client.documents({ id: documentId }).url.get();
+
+      if (error) {
+        throw new Error(error.value.message ?? 'Failed to fetch signed URL');
+      }
+
+      if (!data?.url) {
+        throw new Error('Signed URL missing');
+      }
+
+      return data.url;
+    };
+
     const load = async () => {
       try {
-        const response = await fetch(`/api/documents/${documentId}/file`, {
-          credentials: 'same-origin',
-        });
+        const signedUrl = await fetchSignedUrl();
 
-        if (!response.ok) {
-          throw new Error('Failed to fetch PDF file');
-        }
-
-        const buffer = await response.arrayBuffer();
-
-        await documentManager.openDocumentBuffer({
-          buffer,
+        await documentManager.openDocumentUrl({
+          url: signedUrl,
           name: fileName,
           autoActivate: true,
         });
       } catch (error) {
-        onError(
-          error instanceof Error ? error.message : 'Failed to load document',
-        );
+        try {
+          const signedUrl = await fetchSignedUrl();
+
+          await documentManager.openDocumentUrl({
+            url: signedUrl,
+            name: fileName,
+            autoActivate: true,
+          });
+        } catch (retryError) {
+          onError(
+            retryError instanceof Error
+              ? retryError.message
+              : 'Failed to load document',
+          );
+        }
       }
     };
 

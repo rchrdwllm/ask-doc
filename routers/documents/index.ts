@@ -183,8 +183,8 @@ export const documentsRouter = new Elysia({ prefix: "/documents" })
     },
   )
   .get(
-    "/:id/file",
-    async ({ params, status }) => {
+    "/:id/url",
+    async ({ params, status, set }) => {
       const { id } = params;
 
       const session = await auth.api.getSession({
@@ -213,29 +213,24 @@ export const documentsRouter = new Elysia({ prefix: "/documents" })
 
       const supabase = createSupabaseClient();
 
+      const expiresInSeconds = 60 * 15;
       const { data, error } = await supabase.storage
         .from("documents")
-        .download(result.storage_path);
+        .createSignedUrl(result.storage_path, expiresInSeconds);
 
-      if (error || !data) {
-        console.error("Supabase download error:", error);
+      if (error || !data?.signedUrl) {
+        console.error("Supabase signed URL error:", error);
 
         return status(500, {
-          message: "Failed to download file",
+          message: "Failed to create signed URL",
         });
       }
 
-      const fileName = result.storage_path.split("/").pop() ?? "document.pdf";
-      const safeFileName = fileName.replace(/"/g, "");
-      const arrayBuffer = await data.arrayBuffer();
+      set.headers["Cache-Control"] = "private, max-age=900";
 
-      return new Response(arrayBuffer, {
-        status: 200,
-        headers: {
-          "Content-Type": "application/pdf",
-          "Content-Disposition": `inline; filename="${safeFileName}"`,
-          "Cache-Control": "no-store",
-        },
+      return status(200, {
+        url: data.signedUrl,
+        expiresAt: new Date(Date.now() + expiresInSeconds * 1000).toISOString(),
       });
     },
     {
@@ -243,6 +238,10 @@ export const documentsRouter = new Elysia({ prefix: "/documents" })
         id: z.string(),
       }),
       response: {
+        200: z.object({
+          url: z.string(),
+          expiresAt: z.string(),
+        }),
         401: z.object({
           message: z.string(),
         }),
