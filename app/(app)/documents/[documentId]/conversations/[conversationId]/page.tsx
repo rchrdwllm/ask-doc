@@ -1,6 +1,11 @@
 import dynamic from "next/dynamic"
 import { headers } from "next/headers"
 import { client } from "@/lib/api"
+import {
+  ResizableHandle,
+  ResizablePanel,
+  ResizablePanelGroup,
+} from "@/components/ui/resizable"
 
 type ConversationPageProps = {
   params: Promise<{
@@ -48,14 +53,19 @@ export default async function ConversationPage({
   }
 
   return (
-    <main className="flex h-full flex-col gap-4 p-0 md:p-0">
-      <div className="grid h-full lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
-        <DocumentViewerPanel documentId={documentId} />
-        <ConversationPanel
-          conversationTitle={conversation.title ?? "Untitled Conversation"}
-          messages={messages}
-        />
-      </div>
+    <main className="h-full flex">
+      <ResizablePanelGroup className="w-auto flex-1" orientation="horizontal">
+        <ResizablePanel defaultSize="60%" minSize="30%">
+          <DocumentViewerPanel documentId={documentId} />
+        </ResizablePanel>
+        <ResizableHandle withHandle />
+        <ResizablePanel defaultSize="40%" minSize="25%">
+          <ConversationPanel
+            conversationTitle={conversation.title ?? "Untitled Conversation"}
+            messages={messages}
+          />
+        </ResizablePanel>
+      </ResizablePanelGroup>
     </main>
   )
 }
