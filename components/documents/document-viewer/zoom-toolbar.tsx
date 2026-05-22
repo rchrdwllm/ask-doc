@@ -16,7 +16,7 @@ export const ZoomToolbar = ({ documentId }: ZoomToolbarProps) => {
   }
 
   return (
-    <div className="sticky top-0 z-10 bg-background p-4 flex items-center gap-4">
+    <div className="sticky top-0 z-10 bg-background p-4 flex items-center gap-4 border-b border-border">
       <p className="text-sm text-muted-foreground">Zoom</p>
       <Separator
         className="h-4 data-[orientation=vertical]:self-center"
