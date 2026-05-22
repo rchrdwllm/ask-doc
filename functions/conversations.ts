@@ -3,7 +3,7 @@ import {
   conversationInsertSchema,
   conversationUpdateSchema,
 } from "@/db/schema";
-import { and, eq } from "drizzle-orm";
+import { and, desc, eq } from "drizzle-orm";
 import { db } from "@/db";
 import * as z from "zod";
 
@@ -28,7 +28,8 @@ export const getConversationsByDocumentId = async (
         eq(conversation.userId, userId),
         eq(conversation.documentId, documentId),
       ),
-    );
+    )
+    .orderBy(desc(conversation.updatedAt));
 
   return result;
 };

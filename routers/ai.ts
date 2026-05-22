@@ -18,6 +18,7 @@ import { retrieveInformation } from "@/lib/retrieval";
 import { loadPrompt } from "@/lib/prompt";
 import { getDenseDocumentChunksByDocumentId } from "@/functions/document-chunks";
 import { createMessage } from "@/functions/messages";
+import { updateConversation } from "@/functions/conversations";
 
 export const aiRouter = new Elysia({ prefix: "/ai" })
   .post(
@@ -154,6 +155,10 @@ export const aiRouter = new Elysia({ prefix: "/ai" })
               }),
             );
           },
+        });
+
+        await updateConversation(conversationId, {
+          updatedAt: new Date(),
         });
 
         return status(200, createUIMessageStreamResponse({ stream }));
