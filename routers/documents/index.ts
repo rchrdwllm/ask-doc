@@ -182,6 +182,79 @@ export const documentsRouter = new Elysia({ prefix: "/documents" })
       },
     },
   )
+  .get(
+    "/:id/file",
+    async ({ params, status }) => {
+      const { id } = params;
+
+      const session = await auth.api.getSession({
+        headers: await headers(),
+      });
+
+      if (!session) {
+        return status(401, {
+          message: "Unauthorized",
+        });
+      }
+
+      const result = await getDocumentById(id);
+
+      if (!result) {
+        return status(404, {
+          message: "Document not found",
+        });
+      }
+
+      if (result.userId !== session.user.id) {
+        return status(401, {
+          message: "Unauthorized",
+        });
+      }
+
+      const supabase = createSupabaseClient();
+
+      const { data, error } = await supabase.storage
+        .from("documents")
+        .download(result.storage_path);
+
+      if (error || !data) {
+        console.error("Supabase download error:", error);
+
+        return status(500, {
+          message: "Failed to download file",
+        });
+      }
+
+      const fileName = result.storage_path.split("/").pop() ?? "document.pdf";
+      const safeFileName = fileName.replace(/"/g, "");
+      const arrayBuffer = await data.arrayBuffer();
+
+      return new Response(arrayBuffer, {
+        status: 200,
+        headers: {
+          "Content-Type": "application/pdf",
+          "Content-Disposition": `inline; filename="${safeFileName}"`,
+          "Cache-Control": "no-store",
+        },
+      });
+    },
+    {
+      params: z.object({
+        id: z.string(),
+      }),
+      response: {
+        401: z.object({
+          message: z.string(),
+        }),
+        404: z.object({
+          message: z.string(),
+        }),
+        500: z.object({
+          message: z.string(),
+        }),
+      },
+    },
+  )
   .delete(
     "/:id",
     async ({ params, status }) => {
