@@ -8,6 +8,7 @@ import { cn } from "@/lib/utils";
 import TopLoaderWrapper from "@/components/wrappers/toploader-wrapper";
 import { ReactQueryProvider } from "@/components/providers/react-query-provider";
 import { APP_NAME, APP_DESCRIPTION, APP_URL } from "@/constants";
+import { Suspense } from "react";
 
 const loraHeading = Lora({ subsets: ['latin'], variable: '--font-heading' });
 
@@ -58,16 +59,18 @@ export default function RootLayout({
       suppressHydrationWarning
     >
       <body suppressHydrationWarning className="min-h-full flex flex-col">
-        <TooltipProvider>
-          <ThemeProvider attribute="class">
-            <ReactQueryProvider>
-              <TopLoaderWrapper>
-                {children}
-              </TopLoaderWrapper>
-            </ReactQueryProvider>
-          </ThemeProvider>
-          <Toaster />
-        </TooltipProvider>
+        <Suspense>
+          <TooltipProvider>
+            <ThemeProvider attribute="class">
+              <ReactQueryProvider>
+                <TopLoaderWrapper>
+                  {children}
+                </TopLoaderWrapper>
+              </ReactQueryProvider>
+            </ThemeProvider>
+            <Toaster />
+          </TooltipProvider>
+        </Suspense>
       </body>
     </html>
   );
