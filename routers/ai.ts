@@ -224,20 +224,38 @@ export const aiRouter = new Elysia({ prefix: "/ai" })
     async ({ body, status }) => {
       const { text } = body;
 
-      const result = await generateText({
-        model: "openai/gpt-oss-120b",
-        prompt: `Generate a concise title for the following text to be used as a conversation title: "${text}". Output in plain text only.`,
-      });
+      try {
+        const result = await generateText({
+          model: "openai/gpt-oss-120b",
+          prompt: `Generate a concise title for the following text to be used as a conversation title: "${text}". Output in plain text only.`,
+        });
 
-      if (!result) {
+        if (!result) {
+          return status(500, {
+            message: "Failed to generate title.",
+          });
+        }
+
+        const generatedTitle = result.text.trim();
+
+        return status(200, { generatedTitle });
+      } catch (error) {
+        if (APICallError.isInstance(error)) {
+          if (error.statusCode === 429) {
+            return status(429, {
+              message: "Quota reached. Please try again later.",
+            });
+          }
+
+          return status(502, {
+            message: "Upstream AI error.",
+          });
+        }
+
         return status(500, {
-          message: "Failed to generate title.",
+          message: "Unexpected error.",
         });
       }
-
-      const generatedTitle = result.text.trim();
-
-      return status(200, { generatedTitle });
     },
     {
       body: z.object({
@@ -246,6 +264,12 @@ export const aiRouter = new Elysia({ prefix: "/ai" })
       response: {
         200: z.object({
           generatedTitle: z.string(),
+        }),
+        429: z.object({
+          message: z.string(),
+        }),
+        502: z.object({
+          message: z.string(),
         }),
         500: z.object({
           message: z.string(),
@@ -258,29 +282,47 @@ export const aiRouter = new Elysia({ prefix: "/ai" })
     async ({ body, status }) => {
       const { documentId } = body;
 
-      const chunks = await getDenseDocumentChunksByDocumentId(documentId);
-      const chunkContents = chunks.map((chunk) => chunk.content);
+      try {
+        const chunks = await getDenseDocumentChunksByDocumentId(documentId);
+        const chunkContents = chunks.map((chunk) => chunk.content);
 
-      const result = await generateText({
-        model: "openai/gpt-oss-120b",
-        prompt:
-          (await loadPrompt("suggestions")) +
-          `\n\nContext:\n${chunkContents.join("\n\n")}`,
-        output: Output.object({
-          schema: z.object({
-            suggestions: z.array(z.string()),
+        const result = await generateText({
+          model: "openai/gpt-oss-120b",
+          prompt:
+            (await loadPrompt("suggestions")) +
+            `\n\nContext:\n${chunkContents.join("\n\n")}`,
+          output: Output.object({
+            schema: z.object({
+              suggestions: z.array(z.string()),
+            }),
           }),
-        }),
-      });
-      const suggestions = result.output.suggestions;
+        });
+        const suggestions = result.output.suggestions;
 
-      if (!suggestions.length) {
+        if (!suggestions.length) {
+          return status(500, {
+            message: "Failed to generate suggestions.",
+          });
+        }
+
+        return status(200, suggestions);
+      } catch (error) {
+        if (APICallError.isInstance(error)) {
+          if (error.statusCode === 429) {
+            return status(429, {
+              message: "Quota reached. Please try again later.",
+            });
+          }
+
+          return status(502, {
+            message: "Upstream AI error.",
+          });
+        }
+
         return status(500, {
-          message: "Failed to generate suggestions.",
+          message: "Unexpected error.",
         });
       }
-
-      return status(200, suggestions);
     },
     {
       body: z.object({
@@ -288,6 +330,12 @@ export const aiRouter = new Elysia({ prefix: "/ai" })
       }),
       response: {
         200: z.array(z.string()),
+        429: z.object({
+          message: z.string(),
+        }),
+        502: z.object({
+          message: z.string(),
+        }),
         500: z.object({
           message: z.string(),
         }),
