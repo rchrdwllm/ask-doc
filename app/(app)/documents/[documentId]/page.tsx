@@ -1,3 +1,4 @@
+import type { Metadata } from "next"
 import { CalendarDays, Eye, List } from "lucide-react"
 import Link from "next/link"
 import { headers } from "next/headers"
@@ -14,6 +15,23 @@ import { formatDate, extractTextFromParts, sanitizePlainText, formatRelativeTime
 type DocumentPageProps = {
   params: Promise<{ documentId: string }>
   searchParams: Promise<{ view?: string }>
+}
+
+export async function generateMetadata({
+  params,
+}: DocumentPageProps): Promise<Metadata> {
+  const { documentId } = await params
+  const incoming = await headers()
+  const cookieHeader = incoming.get("cookie") ?? ""
+  const { data } = await client.documents({ id: documentId }).get({
+    headers: {
+      cookie: cookieHeader,
+    },
+  })
+
+  return {
+    title: data ? `${data.title} — My Documents` : "Document",
+  }
 }
 
 export default async function DocumentPage({

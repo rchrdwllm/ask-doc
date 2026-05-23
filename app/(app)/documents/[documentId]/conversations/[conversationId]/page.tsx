@@ -1,3 +1,4 @@
+import type { Metadata } from "next"
 import dynamic from "next/dynamic"
 import { headers } from "next/headers"
 import { client } from "@/lib/api"
@@ -12,6 +13,23 @@ type ConversationPageProps = {
     documentId: string
     conversationId: string
   }>
+}
+
+export async function generateMetadata({
+  params,
+}: ConversationPageProps): Promise<Metadata> {
+  const { conversationId } = await params
+  const incoming = await headers()
+  const cookieHeader = incoming.get("cookie") ?? ""
+  const { data } = await client.conversations({ id: conversationId }).get({
+    headers: {
+      cookie: cookieHeader,
+    },
+  })
+
+  return {
+    title: data?.title ?? "Conversation",
+  }
 }
 
 const DocumentViewerPanel = dynamic(
