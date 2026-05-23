@@ -10,7 +10,13 @@ import { ConversationCard } from "@/components/documents/conversation-card"
 import DocumentViewerPanel from "@/components/documents/document-viewer/document-viewer-panel"
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
+import { Skeleton } from "@/components/ui/skeleton"
 import { formatDate, extractTextFromParts, sanitizePlainText, formatRelativeTime } from "@/lib/documents"
+import { getDocumentById } from "@/lib/server/documents"
+import { auth } from "@/lib/auth"
+import { getDocumentConversations } from "@/lib/server/conversations"
+import { getConversationLastMessage } from "@/lib/server/messages"
+import { Suspense } from "react"
 
 type DocumentPageProps = {
   params: Promise<{ documentId: string }>
@@ -34,39 +40,25 @@ export async function generateMetadata({
   }
 }
 
-export default async function DocumentPage({
-  params,
-  searchParams,
-}: DocumentPageProps) {
+async function DocumentPageSuspenseWrapper({ params, searchParams }: DocumentPageProps) {
   const { documentId } = await params
   const { view } = await searchParams
   const isViewingDocument = view === "true"
   const incoming = await headers()
   const cookieHeader = incoming.get("cookie") ?? ""
-  const { data, error } = await client.documents({ id: documentId }).get({
-    headers: {
-      cookie: cookieHeader,
-    },
-  })
-  const { data: conversations } = await client
-    .documents({ id: documentId })
-    .conversations.get({
-      headers: {
-        cookie: cookieHeader,
-      },
-    })
+  const session = await auth.api.getSession({ headers: incoming });
+  const { data, error } = await getDocumentById(documentId, cookieHeader, session!.user.id);
+  const { data: conversations } = await getDocumentConversations(documentId, cookieHeader, session!.user.id);
   const conversationItems = conversations ?? []
   const now = new Date()
 
   const conversationPreviews = await Promise.all(
     conversationItems.map(async (conversation) => {
-      const { data: lastMessage } = await client
-        .conversations({ id: conversation.id })
-        .messages.last.get({
-          headers: {
-            cookie: cookieHeader,
-          },
-        })
+      const { data: lastMessage } = await getConversationLastMessage(
+        conversation.id,
+        cookieHeader,
+        session!.user.id
+      )
 
       return {
         conversation,
@@ -177,5 +169,67 @@ export default async function DocumentPage({
         </div>
       )}
     </main>
+  )
+}
+
+function SkeletonLoader() {
+  return (
+    <main className="flex flex-col gap-6 p-8">
+      <div className="flex flex-col gap-3">
+        <div className="flex flex-col gap-1">
+          <div className="flex items-start justify-between gap-4">
+            <div className="flex flex-col gap-1">
+              <h1 className="font-heading text-3xl font-semibold">Document</h1>
+              <div className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
+                <span className="inline-flex items-center gap-1">
+                  <CalendarDays />
+                  Uploaded —
+                </span>
+                <Separator orientation="vertical" className="h-4" />
+                <span>— pages</span>
+                <Separator orientation="vertical" className="h-4" />
+                <Badge variant="secondary">Processing</Badge>
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              <Skeleton className="h-9 w-[130px]" />
+              <Skeleton className="h-9 w-[150px]" />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        {Array.from({ length: 6 }).map((_, i) => (
+          <div
+            key={i}
+            className="flex h-full flex-col rounded-xl border"
+          >
+            <div className="space-y-2 p-6 pb-3">
+              <div className="flex items-start justify-between gap-3">
+                <Skeleton className="h-5 flex-1" />
+                <Skeleton className="size-8 shrink-0 rounded-md" />
+              </div>
+            </div>
+            <div className="flex items-center gap-2 p-6 pt-3 mt-auto">
+              <Skeleton className="h-3 flex-1" />
+              <div className="shrink-0 h-4 w-px bg-border" />
+              <Skeleton className="h-3 w-16 shrink-0" />
+            </div>
+          </div>
+        ))}
+      </div>
+    </main>
+  )
+}
+
+export default async function DocumentPage({
+  params,
+  searchParams,
+}: DocumentPageProps) {
+  return (
+    <Suspense fallback={<SkeletonLoader />}>
+      <DocumentPageSuspenseWrapper params={params} searchParams={searchParams} />
+    </Suspense>
   )
 }

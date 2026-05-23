@@ -2,9 +2,9 @@
 
 import { Plus } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { client } from "@/lib/api"
 import { toast } from "sonner"
 import { useRouter } from "@bprogress/next/app"
+import { createConversation } from "@/lib/server/actions/conversations"
 
 type NewConversationButtonProps = {
   documentId: string
@@ -16,12 +16,13 @@ export function NewConversationButton({
   const router = useRouter()
 
   const handleNewConversation = async () => {
-    const { data, error } = await client
-      .documents({ id: documentId })
-      .conversations.post()
+    const { data, error } = await createConversation(documentId)
 
     if (error) {
       toast.error(error.value.message || "Failed to start conversation")
+      return
+    } else if (!data) {
+      toast.error("Failed to start conversation")
       return
     }
 
