@@ -11,6 +11,10 @@ import DocumentViewerPanel from "@/components/documents/document-viewer/document
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
 import { formatDate, extractTextFromParts, sanitizePlainText, formatRelativeTime } from "@/lib/documents"
+import { getDocumentById } from "@/lib/server/documents"
+import { auth } from "@/lib/auth"
+import { getDocumentConversations } from "@/lib/server/conversations"
+import { getConversationLastMessage } from "@/lib/server/messages"
 
 type DocumentPageProps = {
   params: Promise<{ documentId: string }>
@@ -43,30 +47,19 @@ export default async function DocumentPage({
   const isViewingDocument = view === "true"
   const incoming = await headers()
   const cookieHeader = incoming.get("cookie") ?? ""
-  const { data, error } = await client.documents({ id: documentId }).get({
-    headers: {
-      cookie: cookieHeader,
-    },
-  })
-  const { data: conversations } = await client
-    .documents({ id: documentId })
-    .conversations.get({
-      headers: {
-        cookie: cookieHeader,
-      },
-    })
+  const session = await auth.api.getSession({ headers: incoming });
+  const { data, error } = await getDocumentById(documentId, cookieHeader, session!.user.id);
+  const { data: conversations } = await getDocumentConversations(documentId, cookieHeader, session!.user.id);
   const conversationItems = conversations ?? []
   const now = new Date()
 
   const conversationPreviews = await Promise.all(
     conversationItems.map(async (conversation) => {
-      const { data: lastMessage } = await client
-        .conversations({ id: conversation.id })
-        .messages.last.get({
-          headers: {
-            cookie: cookieHeader,
-          },
-        })
+      const { data: lastMessage } = await getConversationLastMessage(
+        conversation.id,
+        cookieHeader,
+        session!.user.id
+      )
 
       return {
         conversation,

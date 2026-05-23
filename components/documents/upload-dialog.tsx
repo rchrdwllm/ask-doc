@@ -72,8 +72,6 @@ export function UploadDialog({ open, onOpenChange }: UploadDialogProps) {
         window.dispatchEvent(new Event("askdoc:documents-updated"));
       }
 
-      router.refresh();
-
       onOpenChange(false);
 
       const { data: chunkData, error: chunkError } = await chunkDocument(file);
@@ -144,8 +142,6 @@ export function UploadDialog({ open, onOpenChange }: UploadDialogProps) {
 
       setFile(null);
       onOpenChange(false);
-
-      router.refresh();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Upload failed");
     } finally {

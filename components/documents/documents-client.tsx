@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useState } from "react"
 import { toast } from "sonner"
 import {
   LayoutGrid,
@@ -15,6 +15,7 @@ import { DocumentsEmptyState } from "@/components/documents/documents-empty-stat
 import { DocumentsButtonGroup } from "@/components/documents/documents-button-group"
 import { DocumentsDeleteDialog } from "@/components/documents/documents-delete-dialog"
 import { useRouter } from "@bprogress/next/app"
+import { deleteDocument } from "@/lib/server/actions/documents"
 
 type DocumentsClientProps = {
   documents: DocumentRow[]
@@ -23,25 +24,10 @@ type DocumentsClientProps = {
 export default function DocumentsClient({ documents }: DocumentsClientProps) {
   const router = useRouter()
   const [viewMode, setViewMode] = useState<ViewMode>("list")
-  const [documentItems, setDocumentItems] = useState<DocumentDisplay[]>(() =>
-    documents.map((doc) => ({
-      ...doc,
-      formattedSize: doc.storage_path ? "—" : undefined,
-    }))
-  )
   const [deleteTarget, setDeleteTarget] = useState<DocumentDisplay | null>(null)
   const [isDeleteOpen, setIsDeleteOpen] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
   const [isUploadOpen, setIsUploadOpen] = useState(false)
-
-  useEffect(() => {
-    setDocumentItems(
-      documents.map((doc) => ({
-        ...doc,
-        formattedSize: doc.storage_path ? "—" : undefined,
-      }))
-    )
-  }, [documents])
 
   const handleDeleteOpen = (doc: DocumentDisplay) => {
     setDeleteTarget(doc)
@@ -57,20 +43,28 @@ export default function DocumentsClient({ documents }: DocumentsClientProps) {
 
   const handleDeleteConfirm = async () => {
     if (!deleteTarget) return
-    setIsDeleting(true)
-    const toastId = toast.loading("Deleting document…")
-    try {
-      const response = await fetch(`/api/documents/${deleteTarget.id}`, {
-        method: "DELETE",
-      })
 
-      if (!response.ok) {
-        throw new Error("Failed to delete document")
+    setIsDeleting(true)
+
+    const toastId = toast.loading("Deleting document…")
+
+    try {
+      const { data, error } = await deleteDocument(deleteTarget.id)
+
+      if (error) {
+        console.error("Failed to delete document:", error);
+        toast.error("Failed to delete document", { id: toastId });
+        return;
+      } else if (!data) {
+        console.error("No data returned from delete operation");
+        toast.error("Failed to delete document", { id: toastId });
+        return;
       }
 
-      setDocumentItems((items) => items.filter((doc) => doc.id !== deleteTarget.id))
       setIsDeleteOpen(false)
+
       toast.success("Document deleted", { id: toastId })
+
       if (typeof window !== "undefined") {
         window.dispatchEvent(new Event("askdoc:documents-updated"))
       }
@@ -103,7 +97,7 @@ export default function DocumentsClient({ documents }: DocumentsClientProps) {
 
       <div className="flex items-center justify-between">
         <p className="text-sm text-muted-foreground">
-          {documentItems.length} document{documentItems.length !== 1 ? "s" : ""}
+          {documents.length} document{documents.length !== 1 ? "s" : ""}
         </p>
         <DocumentsButtonGroup
           buttons={[
@@ -123,18 +117,18 @@ export default function DocumentsClient({ documents }: DocumentsClientProps) {
         />
       </div>
 
-      {documentItems.length === 0 ? (
+      {documents.length === 0 ? (
         <DocumentsEmptyState onUpload={() => setIsUploadOpen(true)} />
       ) : viewMode === "list" ? (
         <DocumentsList
-          documents={documentItems}
+          documents={documents}
           onDelete={handleDeleteOpen}
           onOpen={handleOpenDocument}
           onView={handleViewDocument}
         />
       ) : (
         <DocumentsGrid
-          documents={documentItems}
+          documents={documents}
           onDelete={handleDeleteOpen}
           onOpen={handleOpenDocument}
           onView={handleViewDocument}

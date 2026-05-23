@@ -1,22 +1,19 @@
 import type { Metadata } from "next";
 import DocumentsClient from "@/components/documents/documents-client";
-import { client } from "@/lib/api";
 import { headers } from "next/headers";
+import { getDocuments } from "@/lib/server/documents";
+import { Suspense } from "react";
+import { auth } from "@/lib/auth";
 
 export const metadata: Metadata = {
   title: "My Documents",
 };
 
-export default async function DocumentsPage() {
+async function DocumentsPageSuspenseContent() {
   const incoming = await headers()
   const cookieHeader = incoming.get('cookie') ?? ''
-  const { data, error } = await client.documents.get({
-    fetch: {
-      headers: {
-        cookie: cookieHeader,
-      },
-    },
-  });
+  const session = await auth.api.getSession({ headers: incoming });
+  const { data, error } = await getDocuments(cookieHeader, session!.user.id);
 
   if (!data) {
     return (
@@ -31,5 +28,17 @@ export default async function DocumentsPage() {
 
   return (
     <DocumentsClient documents={data} />
+  )
+}
+
+export default async function DocumentsPage() {
+  return (
+    <Suspense fallback={
+      <div className="p-4">
+        <h1 className="text-2xl font-bold">Documents</h1>
+      </div>
+    }>
+      <DocumentsPageSuspenseContent />
+    </Suspense>
   )
 }
