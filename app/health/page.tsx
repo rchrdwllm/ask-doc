@@ -1,4 +1,9 @@
+import type { Metadata } from "next";
 import { client } from "@/lib/api";
+
+export const metadata: Metadata = {
+  title: "Health Check",
+};
 
 export default async function HealthPage() {
   const res = await client.health.get();

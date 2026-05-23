@@ -1,6 +1,11 @@
+import type { Metadata } from "next";
 import DocumentsClient from "@/components/documents/documents-client";
 import { client } from "@/lib/api";
 import { headers } from "next/headers";
+
+export const metadata: Metadata = {
+  title: "My Documents",
+};
 
 export default async function DocumentsPage() {
   const incoming = await headers()
