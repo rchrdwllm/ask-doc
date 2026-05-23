@@ -24,3 +24,26 @@ export const getConversationLastMessage = async (
 
   return { data, error };
 };
+
+export const getConversationMessages = async (
+  conversationId: string,
+  cookieHeader: string,
+  userId: string,
+) => {
+  "use cache";
+
+  cacheLife("hours");
+  cacheTag(`${userId}:conversations:${conversationId}:messages`);
+
+  const { data, error } = await client
+    .conversations({
+      id: conversationId,
+    })
+    .messages.get({
+      headers: {
+        cookie: cookieHeader,
+      },
+    });
+
+  return { data, error };
+};

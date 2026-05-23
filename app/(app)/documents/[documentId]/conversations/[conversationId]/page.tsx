@@ -7,6 +7,9 @@ import {
   ResizablePanel,
   ResizablePanelGroup,
 } from "@/components/ui/resizable"
+import { getConversationById } from "@/lib/server/conversations"
+import { auth } from "@/lib/auth"
+import { getConversationMessages } from "@/lib/server/messages"
 
 type ConversationPageProps = {
   params: Promise<{
@@ -45,22 +48,17 @@ export default async function ConversationPage({
   const { conversationId, documentId } = await params
   const incoming = await headers()
   const cookieHeader = incoming.get("cookie") ?? ""
-
-  const { data: conversation } = await client.conversations({
-    id: conversationId,
-  }).get({
-    headers: {
-      cookie: cookieHeader,
-    },
-  });
-
-  const { data: messages } = await client.conversations({
-    id: conversationId,
-  }).messages.get({
-    headers: {
-      cookie: cookieHeader,
-    },
-  });
+  const session = await auth.api.getSession({ headers: incoming })
+  const { data: conversation } = await getConversationById(
+    conversationId,
+    cookieHeader,
+    session!.user.id
+  );
+  const { data: messages } = await getConversationMessages(
+    conversationId,
+    cookieHeader,
+    session!.user.id
+  );
 
   if (!messages || !conversation) {
     return (
