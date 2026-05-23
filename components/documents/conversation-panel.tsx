@@ -200,7 +200,7 @@ export default function ConversationPanel({
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
-  }, [newMessages])
+  }, [newMessages, status])
 
   useEffect(() => {
     setRenameValue(conversationTitle)
@@ -245,7 +245,7 @@ export default function ConversationPanel({
         </DropdownMenu>
       </div>
       {newMessages.length ? (
-        <div ref={messagesEndRef} className="flex h-auto overflow-y-auto flex-col gap-4 p-4">
+        <div className="flex h-auto overflow-y-auto flex-col gap-4 p-4">
           {newMessages.map((message) => {
             const sourceParts = message.parts.filter(
               (part) =>
@@ -324,6 +324,7 @@ export default function ConversationPanel({
               </MessageContent>
             </Message>
           )}
+          <div ref={messagesEndRef} />
         </div>
       ) : (
         <div className="flex flex-1 items-center justify-center p-4">
