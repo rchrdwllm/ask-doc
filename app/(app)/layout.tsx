@@ -1,12 +1,12 @@
-'use client'
-
-import type { ReactNode } from "react";
+import { Suspense, type ReactNode } from "react";
 import { AppShell } from "@/components/app-shell/app-shell";
 
 export default function AppLayout({ children }: { children: ReactNode }) {
   return (
-    <AppShell>
-      {children}
-    </AppShell>
+    <Suspense fallback={null}>
+      <AppShell>
+        {children}
+      </AppShell>
+    </Suspense>
   );
 }
