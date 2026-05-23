@@ -19,6 +19,8 @@ import { loadPrompt } from "@/lib/prompt";
 import { getDenseDocumentChunksByDocumentId } from "@/functions/document-chunks";
 import { createMessage } from "@/functions/messages";
 import { updateConversation } from "@/functions/conversations";
+import { auth } from "@/lib/auth";
+import { revalidateTag } from "next/cache";
 
 export const aiRouter = new Elysia({ prefix: "/ai" })
   .post(
@@ -27,6 +29,13 @@ export const aiRouter = new Elysia({ prefix: "/ai" })
       const { messages, documentId, conversationId } = body;
       const incoming = await headers();
       const cookieHeader = incoming.get("cookie") ?? "";
+      const session = await auth.api.getSession({ headers: incoming });
+
+      if (!session) {
+        return status(401, {
+          message: "Unauthorized",
+        });
+      }
 
       try {
         const systemPrompt = await loadPrompt("chat");
@@ -161,6 +170,13 @@ export const aiRouter = new Elysia({ prefix: "/ai" })
           updatedAt: new Date(),
         });
 
+        revalidateTag(
+          `${session.user.id}:documents:${documentId}:conversations`,
+          {
+            expire: 0,
+          },
+        );
+
         return status(200, createUIMessageStreamResponse({ stream }));
       } catch (error) {
         if (APICallError.isInstance(error)) {
@@ -188,6 +204,9 @@ export const aiRouter = new Elysia({ prefix: "/ai" })
       }),
       response: {
         200: z.custom<any>(),
+        401: z.object({
+          message: z.string(),
+        }),
         429: z.object({
           message: z.string(),
         }),
